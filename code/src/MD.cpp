@@ -28,6 +28,9 @@
 #include<math.h>
 #include<string.h>
 
+//! Procurar "\/\d" no regex search e substituir estes valores pela multiplicação do inverso
+//! Ver se faz alguma diferença as definições de doubles com um ponto ou sem ponto. Ex: double sigma = 1. ; ou double sigma = 1; (Acho que nao)
+//! using pre-increment operator instead of the post increment (++i instead of i++) pq é criada uma copia no i++ e isso pode ser custoso.
 
 // Number of particles
 int N;
@@ -202,7 +205,7 @@ int main()
         exit(0);
     }
     // Convert initial temperature from kelvin to natural units
-    Tinit /= TempFac;
+    Tinit /= TempFac; //! Acho que se fizer Tinit *= pow(TempFac, -1); fica mais rapido e igualmente com outras operações
     
     
     printf("\n\n  ENTER THE NUMBER DENSITY IN moles/m^3\n");
@@ -583,6 +586,7 @@ double VelocityVerlet(double dt, int iter, FILE *fp) {
 void initializeVelocities() {
     
     int i, j;
+    //! Pôr todos estes corpos de ciclo dentro do mesmo ciclo
     
     for (i=0; i<N; i++) {
         
