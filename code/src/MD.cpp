@@ -463,6 +463,10 @@ double Kinetic() { //Write Function here!
 double Potential() {
     double quot, r2, rnorm, term1, term2, Pot;
     int i, j, k;
+
+    double r2_3, sigma6, epsilon4;
+    sigma6 = sigma*sigma*sigma*sigma*sigma*sigma;
+    epsilon4 = 4*epsilon;
     
     Pot=0.;
     for (i=0; i<N; i++) {
@@ -473,12 +477,14 @@ double Potential() {
                 for (k=0; k<3; k++) {
                     r2 += (r[i][k]-r[j][k])*(r[i][k]-r[j][k]);
                 }
-                rnorm=sqrt(r2);
-                quot=sigma/rnorm;
-                term1 = pow(quot,12.);
-                term2 = pow(quot,6.);
+                //rnorm=sqrt(r2);
+                //quot=sigma/rnorm;
+                r2_3 = r2*r2*r2;
                 
-                Pot += 4*epsilon*(term1 - term2);
+                term2 = sigma6/r2_3;
+                term1 = term2*term2;
+                
+                Pot += epsilon4*(term1 - term2);
                 
             }
         }
