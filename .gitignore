@@ -1,9 +1,9 @@
 
 MD.exe
 
-cp_average.txt
-cp_output.txt
-cp_traj.xyz
+code/cp_average.txt
+code/cp_output.txt
+code/cp_traj.xyz
 
 gmon.out
 grafo.dot
