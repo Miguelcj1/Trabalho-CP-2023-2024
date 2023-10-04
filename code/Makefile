@@ -1,6 +1,6 @@
 CC = gcc
 SRC = src/
-CFLAGS = # none
+CFLAGS = -O2
 
 .DEFAULT_GOAL = MD.exe
 
@@ -22,6 +22,6 @@ perf:
 	srun --partition=cpar perf stat -e instructions,cycles ./MD.exe < inputdata.txt
 
 graph:
-	gprof MD.exe > ../documentation/relatorio.txt
-	gprof2dot -f prof ../documentation/relatorio.txt -o grafo.dot
-	dot -Tpng -o ../documentation/grafo.png grafo.dot
+	gprof MD.exe > ../relatorio.txt
+	gprof2dot -f prof ../relatorio.txt -o grafo.dot
+	dot -Tpng -o ../grafo.png grafo.dot
