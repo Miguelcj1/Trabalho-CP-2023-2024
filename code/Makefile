@@ -22,6 +22,6 @@ perf:
 	srun --partition=cpar perf stat -e instructions,cycles ./MD.exe < inputdata.txt
 
 graph:
-	gprof MD.exe > ../relatorio.txt
-	gprof2dot -f prof ../relatorio.txt -o grafo.dot
-	dot -Tpng -o ../grafo.png grafo.dot
+	gprof MD.exe > relatorio.txt
+	gprof2dot -f prof relatorio.txt -o grafo.dot
+	dot -Tpng -o grafo.png grafo.dot
