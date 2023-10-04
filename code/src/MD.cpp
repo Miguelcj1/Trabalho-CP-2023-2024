@@ -464,6 +464,11 @@ double Potential() {
     double quot, r2, rnorm, term1, term2, Pot;
     int i, j, k;
 
+    // r2_3 é a variável que irá armazenar r2^3.
+    // sigma6 é a variável que irá armazenar sigma^6.
+    // epsilon4 é a variável que irá armazenar epsilon*4.
+    // Estas variáveis surgem após uma análise matemática das operações feitas pela função.
+    // Elas irão permitir uma redução significativa no número de instruções da função 
     double r2_3, sigma6, epsilon4;
     sigma6 = sigma*sigma*sigma*sigma*sigma*sigma;
     epsilon4 = 4*epsilon;
@@ -477,13 +482,18 @@ double Potential() {
                 for (k=0; k<3; k++) {
                     r2 += (r[i][k]-r[j][k])*(r[i][k]-r[j][k]);
                 }
-                //rnorm=sqrt(r2);
-                //quot=sigma/rnorm;
+                // rnorm e quot tornam-se inuteis após a transformação matemática
+                // rnorm=sqrt(r2);
+                // quot=sigma/rnorm;
+
+                // term2 pode ser calculado a partir de sigma^6 e r2^3.
+                // term1 pode ser calculado a partir de sigma^12 e r2^6 ou term2^2.
                 r2_3 = r2*r2*r2;
-                
                 term2 = sigma6/r2_3;
                 term1 = term2*term2;
                 
+                // invés de fazer sempre a multiplicação de epsilon*4 
+                // podemos armazenar esse valor em uma variável e assim reduzir o #I.
                 Pot += epsilon4*(term1 - term2);
                 
             }
