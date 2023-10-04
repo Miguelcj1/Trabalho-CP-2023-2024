@@ -25,3 +25,12 @@ graph:
 	gprof MD.exe > relatorio.txt
 	gprof2dot -f prof relatorio.txt -o grafo.dot
 	dot -Tpng -o grafo.png grafo.dot
+
+
+# Extra make commands
+scp:
+	scp cp:Trabalho-CP-2023-2024/code/gmon.out .
+	scp cp:Trabalho-CP-2023-2024/code/MD.exe .
+
+compare:
+	./compare.sh
