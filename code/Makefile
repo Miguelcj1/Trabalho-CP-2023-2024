@@ -18,6 +18,9 @@ run:
 gprof: $(SRC)/MD.cpp
 	$(CC) $(CFLAGS) -pg $(SRC)MD.cpp -lm -o MD.exe 
 
+perf:
+	srun --partition=cpar perf stat -e instructions,cycles ./MD.exe < inputdata.txt
+
 graph:
 	gprof MD.exe > ../documentation/relatorio.txt
 	gprof2dot -f prof ../documentation/relatorio.txt -o grafo.dot
