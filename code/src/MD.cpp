@@ -513,7 +513,7 @@ void computeAccelerations() {
     double f, rSqd;
     double rij[3]; // position of i relative to j
 
-    double rSqd3, rSqd7;
+    double rSqd3, rSqd7, rijF;
     
     
     for (i = 0; i < N; i++) {  // set all accelerations to zero
@@ -547,8 +547,10 @@ void computeAccelerations() {
 
             for (k = 0; k < 3; k++) {
                 //  from F = ma, where m = 1 in natural units!
-                a[i][k] += rij[k] * f;
-                a[j][k] -= rij[k] * f;
+                // Para fazer esta multiplicação apenas 1 vez por ciclo.
+                rijF = rij[k] * f;
+                a[i][k] += rijF;
+                a[j][k] -= rijF;
             }
         }
     }
@@ -560,6 +562,8 @@ double VelocityVerlet(double dt, int iter, FILE *fp) {
     
     double psum = 0.;
     
+    double aijDT;
+    
     //  Compute accelerations from forces at current position
     // this call was removed (commented) for predagogical reasons
     //computeAccelerations();
@@ -567,9 +571,11 @@ double VelocityVerlet(double dt, int iter, FILE *fp) {
     //printf("  Updated Positions!\n");
     for (i=0; i<N; i++) {
         for (j=0; j<3; j++) {
-            r[i][j] += v[i][j]*dt + 0.5*a[i][j]*dt*dt;
+            // Para fazer estas multiplicações apenas 1 vez
+            aijDT = 0.5*a[i][j]*dt;
+            r[i][j] += v[i][j]*dt + aijDT*dt;
             
-            v[i][j] += 0.5*a[i][j]*dt;
+            v[i][j] += aijDT;
         }
         //printf("  %i  %6.4e   %6.4e   %6.4e\n",i,r[i][0],r[i][1],r[i][2]);
     }
