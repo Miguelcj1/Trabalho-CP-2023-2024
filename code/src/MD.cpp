@@ -512,6 +512,8 @@ void computeAccelerations() {
     int i, j, k;
     double f, rSqd;
     double rij[3]; // position of i relative to j
+
+    double rSqd3, rSqd7;
     
     
     for (i = 0; i < N; i++) {  // set all accelerations to zero
@@ -532,7 +534,17 @@ void computeAccelerations() {
             }
             
             //  From derivative of Lennard-Jones with sigma and epsilon set equal to 1 in natural units!
-            f = 24 * (2 * pow(rSqd, -7) - pow(rSqd, -4));
+            //f = 24 * (2 * pow(rSqd, -7) - pow(rSqd, -4));
+
+            // Evitar o uso da função pow()
+            rSqd3 = rSqd*rSqd*rSqd;
+            rSqd7 = rSqd3*rSqd3*rSqd;
+
+            // Matemáticamente equivalente a f = 24 * (2 * pow(rSqd, -7) - pow(rSqd, -4));
+            //     f = 24 * (2*rSqd^(-7) - rSqd^(-4)) (=) f = 24 * (2/rSqd^(7) - 1/rSqd^(4)) (=)
+            // (=) f = 48/rSqd^7 - 24/rSqd^4 (=) f = (48-24*rSqd^3)/rSqd^7
+            f = (48-24*rSqd3)/rSqd7;
+
             for (k = 0; k < 3; k++) {
                 //  from F = ma, where m = 1 in natural units!
                 a[i][k] += rij[k] * f;
