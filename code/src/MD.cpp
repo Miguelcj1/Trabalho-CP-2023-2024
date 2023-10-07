@@ -460,8 +460,8 @@ double Kinetic() { //Write Function here!
 
 // Function to calculate the potential energy of the system
 double Potential() {
-    double quot, r2, rnorm, term1, term2, Pot;
-    int i, j, k;
+    double r2, term1, term2, Pot;
+    int i, j;
 
     // r2_3 é a variável que irá armazenar r2^3.
     // sigma6 é a variável que irá armazenar sigma^6.
@@ -478,9 +478,6 @@ double Potential() {
 
             if (j!=i) { //! Talvez conseguisse tirar este if à custa de uma operação de mod (ns se compensa)
                 // Desenrolei um ciclo for(k<3) para reduzir o número de instruções de controlo do ciclo (com o input padrao, reduziu em 1 bilião o #I)
-                // r2  = (r[i][0]-r[j][0])*(r[i][0]-r[j][0]);
-                // r2 += (r[i][1]-r[j][1])*(r[i][1]-r[j][1]);
-                // r2 += (r[i][2]-r[j][2])*(r[i][2]-r[j][2]);
                 r2  = (r[i][0]-r[j][0])*(r[i][0]-r[j][0]) + (r[i][1]-r[j][1])*(r[i][1]-r[j][1]) + (r[i][2]-r[j][2])*(r[i][2]-r[j][2]);
 
                 // rnorm e quot tornam-se inuteis após a transformação matemática
