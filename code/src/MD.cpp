@@ -525,7 +525,7 @@ void computeAccelerations() {
     for (i = 0; i < N-1; i++) {   // loop over all distinct pairs i,j
         for (j = i+1; j < N; j++) {
             // initialize r^2 to zero
-                        rSqd = 0;
+            rSqd = 0;
 
             for (k = 0; k < 3; k++) {
                 //  component-by-componenent position of i relative to j
