@@ -470,27 +470,27 @@ double Potential() {
     // Elas irão permitir uma redução significativa no número de instruções da função 
     double r2_3, sigma6, epsilon4;
     sigma6 = sigma*sigma*sigma*sigma*sigma*sigma;
-    epsilon4 = 4*epsilon;
+    epsilon4 = epsilon*4;
     
     Pot=0.;
     for (i=0; i<N; i++) {
         for (j=0; j<N; j++) {
 
-            if (j!=i) {
+            if (j!=i) { //! Talvez conseguisse tirar este if à custa de uma operação de mod (ns se compensa)
                 // Desenrolei um ciclo for(k<3) para reduzir o número de instruções de controlo do ciclo (com o input padrao, reduziu em 1 bilião o #I)
-                // r2=0.;
-                r2  = (r[i][0]-r[j][0])*(r[i][0]-r[j][0]);
-                r2 += (r[i][1]-r[j][1])*(r[i][1]-r[j][1]);
-                r2 += (r[i][2]-r[j][2])*(r[i][2]-r[j][2]);
-                
+                // r2  = (r[i][0]-r[j][0])*(r[i][0]-r[j][0]);
+                // r2 += (r[i][1]-r[j][1])*(r[i][1]-r[j][1]);
+                // r2 += (r[i][2]-r[j][2])*(r[i][2]-r[j][2]);
+                r2  = (r[i][0]-r[j][0])*(r[i][0]-r[j][0]) + (r[i][1]-r[j][1])*(r[i][1]-r[j][1]) + (r[i][2]-r[j][2])*(r[i][2]-r[j][2]);
+
                 // rnorm e quot tornam-se inuteis após a transformação matemática
                 // rnorm=sqrt(r2);
                 // quot=sigma/rnorm;
 
                 // term2 pode ser calculado a partir de sigma^6 e r2^3.
                 // term1 pode ser calculado a partir de sigma^12 e r2^6 ou term2^2.
-                r2_3 = r2*r2*r2;
-                term2 = sigma6/r2_3;
+                // r2_3 = r2*r2*r2; //* Não tem de estar a ser guardado em nenhuma variável este valor
+                term2 = sigma6/(r2*r2*r2);
                 term1 = term2*term2;
                 
                 // invés de fazer sempre a multiplicação de epsilon*4 
@@ -500,7 +500,6 @@ double Potential() {
             }
         }
     }
-    
     return Pot;
 }
 
@@ -518,22 +517,23 @@ void computeAccelerations() {
     
     
     for (i = 0; i < N; i++) {  // set all accelerations to zero
-        for (k = 0; k < 3; k++) {
-            a[i][k] = 0;
-        }
+        //* Removed k cycle for less control cycle instructions 
+        a[i][0] = 0;
+        a[i][1] = 0;
+        a[i][2] = 0;
     }
     for (i = 0; i < N-1; i++) {   // loop over all distinct pairs i,j
         for (j = i+1; j < N; j++) {
             // initialize r^2 to zero
-            rSqd = 0;
-            
+                        rSqd = 0;
+
             for (k = 0; k < 3; k++) {
                 //  component-by-componenent position of i relative to j
                 rij[k] = r[i][k] - r[j][k];
                 //  sum of squares of the components
                 rSqd += rij[k] * rij[k];
             }
-            
+                        
             //  From derivative of Lennard-Jones with sigma and epsilon set equal to 1 in natural units!
             //f = 24 * (2 * pow(rSqd, -7) - pow(rSqd, -4));
 
