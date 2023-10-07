@@ -525,21 +525,27 @@ void computeAccelerations() {
     for (i = 0; i < N-1; i++) {   // loop over all distinct pairs i,j
         for (j = i+1; j < N; j++) {
             // initialize r^2 to zero
+            /*
             rSqd = 0;
-
             for (k = 0; k < 3; k++) {
                 //  component-by-componenent position of i relative to j
                 rij[k] = r[i][k] - r[j][k];
                 //  sum of squares of the components
                 rSqd += rij[k] * rij[k];
             }
+            */
+            //* Desenrolei o ciclo for(k<3) para reduzir o número de instruções de controlo do ciclo
+            rij[0] = r[i][0] - r[j][0];
+            rij[1] = r[i][1] - r[j][1];
+            rij[2] = r[i][2] - r[j][2];
+            rSqd = rij[0] * rij[0] + rij[1] * rij[1] + rij[2] * rij[2];
                         
             //  From derivative of Lennard-Jones with sigma and epsilon set equal to 1 in natural units!
             //f = 24 * (2 * pow(rSqd, -7) - pow(rSqd, -4));
 
             // Evitar o uso da função pow()
             rSqd3 = rSqd*rSqd*rSqd;
-            rSqd7 = rSqd3*rSqd3*rSqd;
+            rSqd7 = rSqd3*rSqd3*rSqd; //* Usar rsqd3 nesta conta é melhor que usar rSqd^7 confirmadamente
 
             // Matemáticamente equivalente a f = 24 * (2 * pow(rSqd, -7) - pow(rSqd, -4));
             //     f = 24 * (2*rSqd^(-7) - rSqd^(-4)) (=) f = 24 * (2/rSqd^(7) - 1/rSqd^(4)) (=)
@@ -553,6 +559,18 @@ void computeAccelerations() {
                 a[i][k] += rijF;
                 a[j][k] -= rijF;
             }
+            
+            /*** !Não se notou grande diferença ao desenrolar este mas.... fica aqui o codigo.
+            rij[0] *= f;
+            rij[1] *= f;
+            rij[2] *= f;
+            a[i][0] += rij[0];
+            a[i][1] += rij[1];
+            a[i][2] += rij[2];
+            a[j][0] -= rij[0];
+            a[j][1] -= rij[1];
+            a[j][2] -= rij[2];
+            */
         }
     }
 }
