@@ -29,7 +29,6 @@
 #include<string.h>
 
 //! Procurar "\/\d" no regex search e substituir estes valores pela multiplicação do inverso
-//! Ver se faz alguma diferença as definições de doubles com um ponto ou sem ponto. Ex: double sigma = 1. ; ou double sigma = 1; (Acho que nao)
 //! using pre-increment operator instead of the post increment (++i instead of i++) pq é criada uma copia no i++ e isso pode ser custoso.
 
 // Number of particles
@@ -476,12 +475,14 @@ double Potential() {
     Pot=0.;
     for (i=0; i<N; i++) {
         for (j=0; j<N; j++) {
-            
+
             if (j!=i) {
-                r2=0.;
-                for (k=0; k<3; k++) {
-                    r2 += (r[i][k]-r[j][k])*(r[i][k]-r[j][k]);
-                }
+                // Desenrolei um ciclo for(k<3) para reduzir o número de instruções de controlo do ciclo (com o input padrao, reduziu em 1 bilião o #I)
+                // r2=0.;
+                r2  = (r[i][0]-r[j][0])*(r[i][0]-r[j][0]);
+                r2 += (r[i][1]-r[j][1])*(r[i][1]-r[j][1]);
+                r2 += (r[i][2]-r[j][2])*(r[i][2]-r[j][2]);
+                
                 // rnorm e quot tornam-se inuteis após a transformação matemática
                 // rnorm=sqrt(r2);
                 // quot=sigma/rnorm;
