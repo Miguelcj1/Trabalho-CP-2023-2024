@@ -1,5 +1,6 @@
 CC = gcc
 SRC = src/
+# CFLAGS = -O2
 # CFLAGS = -O2 -funroll-loops
 CFLAGS = -O3
 
@@ -20,7 +21,7 @@ gprof: $(SRC)/MD.cpp
 	$(CC) $(CFLAGS) -pg $(SRC)MD.cpp -lm -o MD.exe 
 
 perf:
-	srun --partition=cpar perf stat -e instructions,cycles ./MD.exe < inputdata.txt
+	srun --partition=cpar perf stat -e instructions,cycles,L1-dcache-load-misses ./MD.exe < inputdata.txt
 
 graph:
 	gprof MD.exe > relatorio.txt
@@ -35,3 +36,8 @@ scp:
 
 cmp:
 	./cmp.sh
+
+re:
+	make clean
+	make MD.exe
+	make perf
