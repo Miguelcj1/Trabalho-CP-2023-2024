@@ -477,7 +477,7 @@ double Potential() {
     Pot=0.;
     for (i=0; i<N3; i+=3) {
         for (j=0; j<N3; j+=3) {
-            if (j!=i) { //! Talvez conseguisse tirar este if à custa de uma operação de mod (ns se compensa)
+            if (j!=i) {
                 // Desenrolei um ciclo for(k<3) para reduzir o número de instruções de controlo do ciclo (com o input padrao, reduziu em 1 bilião o #I)
                 rij0 = r[i]-r[j];
                 rij1 = r[i+1]-r[j+1];
@@ -513,6 +513,8 @@ void computeAccelerations() {
     double rij[3]; // position of i relative to j
 
     double rSqd3, rSqd7, rijF;
+    double ai0, ai1, ai2;
+
     int N3 = N*3;
     
     for (i = 0; i < N3; i++) {  // set all accelerations to zero
@@ -520,6 +522,7 @@ void computeAccelerations() {
         a[i] = 0;
     }
     for (i = 0; i < N3-3; i+=3) {   // loop over all distinct pairs i,j
+        ai0=0;ai1=0;ai2=0;
         for (j = i+3; j < N3; j+=3) {
             //* Desenrolei o ciclo for(k<3) para reduzir o número de instruções de controlo do ciclo
             rij[0] = r[i] - r[j];
@@ -539,26 +542,19 @@ void computeAccelerations() {
             // (=) f = 48/rSqd^7 - 24/rSqd^4 (=) f = (48-24*rSqd^3)/rSqd^7
             f = (48-24*rSqd3)/rSqd7;
 
-            for (k = 0; k < 3; k++) {
-                //  from F = ma, where m = 1 in natural units!
-                // Para fazer esta multiplicação apenas 1 vez por ciclo.
-                rijF = rij[k] * f;
-                a[i+k] += rijF;
-                a[j+k] -= rijF;
-            }
-            
-            /*** !Não se notou grande diferença ao desenrolar este mas.... fica aqui o codigo.
-            rij[0] *= f;
-            rij[1] *= f;
-            rij[2] *= f;
-            a[i][0] += rij[0];
-            a[i][1] += rij[1];
-            a[i][2] += rij[2];
-            a[j][0] -= rij[0];
-            a[j][1] -= rij[1];
-            a[j][2] -= rij[2];
-            */
+            ai0    += rij[0] * f;
+            a[j]   -= rij[0] * f; 
+            ai1    += rij[1] * f;
+            a[j+1] -= rij[1] * f; 
+            ai2    += rij[2] * f;
+            a[j+2] -= rij[2] * f; 
+
         }
+        
+        a[i] += ai0;
+        a[i+1] += ai1;
+        a[i+2] += ai2;
+
     }
 }
 
@@ -581,7 +577,7 @@ double VelocityVerlet(double dt, int iter, FILE *fp) {
             // Para fazer estas multiplicações apenas 1 vez
             aijDT = 0.5*a[i+j]*dt;
             r[i+j] += v[i+j]*dt + aijDT*dt;
-            
+
             v[i+j] += aijDT;
         }
         //printf("  %i  %6.4e   %6.4e   %6.4e\n",i,r[i][0],r[i][1],r[i][2]);
@@ -602,6 +598,7 @@ double VelocityVerlet(double dt, int iter, FILE *fp) {
             }
         }
     }
+    // psum *= 2*m/dt;
     
     // Elastic walls
     //* transfered this inside the anterior loop to reduce the number of instructions

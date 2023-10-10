@@ -19,15 +19,10 @@ def are_files_equal(file1, file2, error_margin):
             return False
 
         for val1, val2 in zip(values1, values2):
-            try:
-                float_val1 = float(val1)
-                float_val2 = float(val2)
-                # print(abs(float_val1 - float_val2))
-                if abs(float_val1 - float_val2) > error_margin:
-                    return False
-            except ValueError:
+            val1_12=val1.replace(".", "")[0:12]
+            val2_12=val2.replace(".", "")[0:12]
+            if val1_12 != val2_12:
                 return False
-
     return True
 
 # Specify the file paths and error margin
