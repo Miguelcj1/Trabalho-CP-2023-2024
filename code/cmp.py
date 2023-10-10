@@ -1,6 +1,6 @@
 import sys
 
-def are_files_equal(file1, file2, error_margin):
+def are_files_equal(file1, file2):
     with open(file1, 'r') as f1, open(file2, 'r') as f2:
         f1.readline()  # Skip the first line
         f2.readline()  # Skip the first line
@@ -32,10 +32,9 @@ file2 = "../documentation/base/cp_output.txt"
 if num_args == 2:
     file1 = sys.argv[1]
     file2 = sys.argv[2]
-error_margin = 1e-6 # 1x10^-6 = 0.000001
 
 # Check if the files are equal within the specified error margin
-if are_files_equal(file1, file2, error_margin) > 0:
+if are_files_equal(file1, file2) > 0:
     print("cp_output files are the SAME")
 else:
     print("cp_output files are DIFFERENT")
