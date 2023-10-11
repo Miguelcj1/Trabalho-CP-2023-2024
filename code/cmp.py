@@ -11,6 +11,7 @@ def are_files_equal(file1, file2):
     if len(lines1) != len(lines2):
         return False
 
+    line = 2
     for line1, line2 in zip(lines1, lines2):
         values1 = line1.split()
         values2 = line2.split()
@@ -22,7 +23,9 @@ def are_files_equal(file1, file2):
             val1_12=val1.replace(".", "")[0:12]
             val2_12=val2.replace(".", "")[0:12]
             if val1_12 != val2_12:
+                print( "Line %d is different." % line )
                 return False
+        line += 1
     return True
 
 # Specify the file paths and error margin
