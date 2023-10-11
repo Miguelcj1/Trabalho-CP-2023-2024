@@ -2,7 +2,9 @@ CC = gcc
 SRC = src/
 # CFLAGS = -O2
 # CFLAGS = -O2 -funroll-loops
-CFLAGS = -O3
+# CFLAGS = -O3
+CFLAGS = -O3 -ftree-vectorize -msse4
+
 
 .DEFAULT_GOAL = MD.exe
 
