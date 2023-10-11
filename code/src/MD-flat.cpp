@@ -28,6 +28,9 @@
 #include<math.h>
 #include<string.h>
 
+//! Procurar "\/\d" no regex search e substituir estes valores pela multiplicação do inverso
+//! using pre-increment operator instead of the post increment (++i instead of i++) pq é criada uma copia no i++ e isso pode ser custoso.
+
 // Number of particles
 int N;
 
@@ -48,12 +51,14 @@ double Tinit;  //2;
 //  Vectors!
 //
 const int MAXPART=5001;
+const int MAXPART3=MAXPART*3;
 //  Position
-double r[MAXPART][3];
+// double r[MAXPART][3];
+double r[MAXPART3];
 //  Velocity
-double v[MAXPART][3];
+double v[MAXPART3];
 //  Acceleration
-double a[MAXPART][3];
+double a[MAXPART3];
 //  Force
 double F[MAXPART][3];
 
@@ -201,7 +206,7 @@ int main()
         exit(0);
     }
     // Convert initial temperature from kelvin to natural units
-    Tinit /= TempFac;
+    Tinit /= TempFac; //! Acho que se fizer Tinit *= pow(TempFac, -1); fica mais rapido e igualmente com outras operações
     
     
     printf("\n\n  ENTER THE NUMBER DENSITY IN moles/m^3\n");
@@ -379,9 +384,9 @@ void initialize() {
             for (k=0; k<n; k++) {
                 if (p<N) {
                     
-                    r[p][0] = (i + 0.5)*pos;
-                    r[p][1] = (j + 0.5)*pos;
-                    r[p][2] = (k + 0.5)*pos;
+                    r[p*3] = (i + 0.5)*pos;
+                    r[p*3+1] = (j + 0.5)*pos;
+                    r[p*3+2] = (k + 0.5)*pos;
                 }
                 p++;
             }
@@ -416,16 +421,16 @@ double MeanSquaredVelocity() {
     double vy2 = 0;
     double vz2 = 0;
     double v2;
+    int N3 = N*3;
     
-    for (int i=0; i<N; i++) {
+    for (int i=0; i<N3; i+=3) {
         
-        vx2 = vx2 + v[i][0]*v[i][0];
-        vy2 = vy2 + v[i][1]*v[i][1];
-        vz2 = vz2 + v[i][2]*v[i][2];
+        vx2 += v[i]*v[i];
+        vy2 += v[i+1]*v[i+1];
+        vz2 += v[i+2]*v[i+2];
         
     }
     v2 = (vx2+vy2+vz2)/N;
-    
     
     //printf("  Average of x-component of velocity squared is %f\n",v2);
     return v2;
@@ -435,16 +440,18 @@ double MeanSquaredVelocity() {
 double Kinetic() { //Write Function here!  
     
     double v2, kin;
+    int N3 = N*3;
     
     kin =0.;
-    for (int i=0; i<N; i++) {
+    for (int i=0; i<N3; i+=3) {
         
-        v2 = 0.;
-        for (int j=0; j<3; j++) {
-            v2 += v[i][j]*v[i][j];
-        }
-        kin += v2; //* Removed *m/2 and pus em evidencia no return
-        
+        //* Loop Unrolling j<3
+        v2  = v[i]*v[i];
+        v2 += v[i+1]*v[i+1];
+        v2 += v[i+2]*v[i+2];
+
+        //* Estava += v2*m /2 --> += v2*m*0.5 --> += v2*(m*0.5) em que posto em evidencia pode ser só calculado 1 vez no return.
+        kin += v2; 
     }
     
     //printf("  Total Kinetic Energy is %f\n",N*mvs*m/2.);
@@ -460,20 +467,22 @@ double Potential() {
 
     // r2_3 é a variável que irá armazenar r2^3.
     // sigma6 é a variável que irá armazenar sigma^6.
-    // epsilon4 é a variável que irá armazenar epsilon*4.
     // Estas variáveis surgem após uma análise matemática das operações feitas pela função.
     // Elas irão permitir uma redução significativa no número de instruções da função 
-    double r2_3, sigma6, epsilon4;
+    double r2_3, sigma6;
     sigma6 = sigma*sigma*sigma*sigma*sigma*sigma;
-    
-    Pot=0.;
-    for (i=0; i<N; i++) {
-        for (j=0; j<N; j++) {
+    int N3 = N*3;
+    double rij0, rij1, rij2;
 
+    Pot=0.;
+    for (i=0; i<N3; i+=3) {
+        for (j=0; j<N3; j+=3) {
             if (j!=i) {
                 // Desenrolei um ciclo for(k<3) para reduzir o número de instruções de controlo do ciclo (com o input padrao, reduziu em 1 bilião o #I)
-                r2  = (r[i][0]-r[j][0])*(r[i][0]-r[j][0]) + (r[i][1]-r[j][1])*(r[i][1]-r[j][1]) + (r[i][2]-r[j][2])*(r[i][2]-r[j][2]);
-
+                rij0 = r[i]-r[j];
+                rij1 = r[i+1]-r[j+1];
+                rij2 = r[i+2]-r[j+2];
+                r2  = (rij0)*(rij0) + (rij1)*(rij1) + (rij2)*(rij2);
                 // rnorm e quot tornam-se inuteis após a transformação matemática
                 // rnorm=sqrt(r2);
                 // quot=sigma/rnorm;
@@ -485,12 +494,12 @@ double Potential() {
                 
                 // invés de fazer sempre a multiplicação de epsilon*4 
                 // podemos armazenar esse valor em uma variável e assim reduzir o #I.
-                Pot += term1 - term2;
+                Pot += (term1 - term2);
                 
             }
         }
     }
-    return Pot*epsilon*4;
+    return epsilon*4*Pot;
 }
 
 
@@ -505,31 +514,20 @@ void computeAccelerations() {
 
     double rSqd3, rSqd7, rijF;
     double ai0, ai1, ai2;
+
+    int N3 = N*3;
     
-    
-    for (i = 0; i < N; i++) {  // set all accelerations to zero
+    for (i = 0; i < N3; i++) {  // set all accelerations to zero
         //* Removed k cycle for less control cycle instructions 
-        a[i][0] = 0;
-        a[i][1] = 0;
-        a[i][2] = 0;
+        a[i] = 0;
     }
-    for (i = 0; i < N-1; i++) {   // loop over all distinct pairs i,j
-        ai0=0; ai1=0; ai2=0;
-        for (j = i+1; j < N; j++) {
-            // initialize r^2 to zero
-            /*
-            rSqd = 0;
-            for (k = 0; k < 3; k++) {
-                //  component-by-componenent position of i relative to j
-                rij[k] = r[i][k] - r[j][k];
-                //  sum of squares of the components
-                rSqd += rij[k] * rij[k];
-            }
-            */
+    for (i = 0; i < N3-3; i+=3) {   // loop over all distinct pairs i,j
+        ai0=0;ai1=0;ai2=0;
+        for (j = i+3; j < N3; j+=3) {
             //* Desenrolei o ciclo for(k<3) para reduzir o número de instruções de controlo do ciclo
-            rij[0] = r[i][0] - r[j][0];
-            rij[1] = r[i][1] - r[j][1];
-            rij[2] = r[i][2] - r[j][2];
+            rij[0] = r[i] - r[j];
+            rij[1] = r[i+1] - r[j+1];
+            rij[2] = r[i+2] - r[j+2];
             rSqd = rij[0] * rij[0] + rij[1] * rij[1] + rij[2] * rij[2];
                         
             //  From derivative of Lennard-Jones with sigma and epsilon set equal to 1 in natural units!
@@ -543,32 +541,27 @@ void computeAccelerations() {
             //     f = 24 * (2*rSqd^(-7) - rSqd^(-4)) (=) f = 24 * (2/rSqd^(7) - 1/rSqd^(4)) (=)
             // (=) f = 48/rSqd^7 - 24/rSqd^4 (=) f = (48-24*rSqd^3)/rSqd^7
             f = (48-24*rSqd3)/rSqd7;
-            
-            ai0     += rij[0]*f;
-            a[j][0] -= rij[0]*f;
-            ai1     += rij[1]*f;
-            a[j][1] -= rij[1]*f;
-            ai2     += rij[2]*f;
-            a[j][2] -= rij[2]*f;
-            
-            //* Transformed these instructions to the ones on top and bottom.
-            /* for (k = 0; k < 3; k++) {
-                //  from F = ma, where m = 1 in natural units!
-                // Para fazer esta multiplicação apenas 1 vez por ciclo.
-                a[i][k] += rij[k] * f;
-                a[j][k] -= rij[k] * f;
-            } */
-            
+
+            ai0    += rij[0] * f;
+            a[j]   -= rij[0] * f; 
+            ai1    += rij[1] * f;
+            a[j+1] -= rij[1] * f; 
+            ai2    += rij[2] * f;
+            a[j+2] -= rij[2] * f; 
+
         }
-        a[i][0] += ai0;
-        a[i][1] += ai1;
-        a[i][2] += ai2;
+        
+        a[i] += ai0;
+        a[i+1] += ai1;
+        a[i+2] += ai2;
+
     }
 }
 
 // returns sum of dv/dt*m/A (aka Pressure) from elastic collisions with walls
 double VelocityVerlet(double dt, int iter, FILE *fp) {
     int i, j, k;
+    int N3 = N*3;
     
     double psum = 0.;
     
@@ -579,34 +572,49 @@ double VelocityVerlet(double dt, int iter, FILE *fp) {
     //computeAccelerations();
     //  Update positions and velocity with current velocity and acceleration
     //printf("  Updated Positions!\n");
-    for (i=0; i<N; i++) {
+    for (i=0; i<N3; i+=3) {
         for (j=0; j<3; j++) {
             // Para fazer estas multiplicações apenas 1 vez
-            aijDT = 0.5*a[i][j]*dt;
-            r[i][j] += (v[i][j] + aijDT)*dt; //* Pus 'dt' em evidencia.
-            
-            v[i][j] += aijDT;
+            aijDT = 0.5*a[i+j]*dt;
+            r[i+j] += v[i+j]*dt + aijDT*dt;
+
+            v[i+j] += aijDT;
         }
         //printf("  %i  %6.4e   %6.4e   %6.4e\n",i,r[i][0],r[i][1],r[i][2]);
     }
     //  Update accellerations from updated positions
     computeAccelerations();
     //  Update velocity with updated acceleration
-    for (i=0; i<N; i++) {
+    for (i=0; i<N3; i+=3) {
         for (j=0; j<3; j++) {
-            v[i][j] += 0.5*a[i][j]*dt;
-            if (r[i][j]<0.) {
-                v[i][j] *=-1.; //- elastic walls
-                //* psum += 2*m*fabs(v[i][j])/dt;  // contribution to pressure from "left" walls -tag3
-                psum += fabs(v[i][j]);  // contribution to pressure from "left" walls
+            v[i+j] += 0.5*a[i+j]*dt;
+            if (r[i+j]<0.) {
+                v[i+j] *=-1.; //- elastic walls
+                psum += 2*m*fabs(v[i+j])/dt;  // contribution to pressure from "left" walls
             }
-            if (r[i][j]>=L) {
-                v[i][j]*=-1.;  //- elastic walls
-                //* psum += 2*m*fabs(v[i][j])/dt;  // contribution to pressure from "right" walls -tag3
-                psum += fabs(v[i][j]);  // contribution to pressure from "right" walls
+            if (r[i+j]>=L) {
+                v[i+j]*=-1.;  //- elastic walls
+                psum += 2*m*fabs(v[i+j])/dt;  // contribution to pressure from "right" walls
             }
         }
     }
+    // psum *= 2*m/dt;
+    
+    // Elastic walls
+    //* transfered this inside the anterior loop to reduce the number of instructions
+    // for (i=0; i<N3; i+=3) {
+    //     for (j=0; j<3; j++) {
+    //         if (r[i+j]<0.) {
+    //             v[i+j] *=-1.; //- elastic walls
+    //             psum += 2*m*fabs(v[i+j])/dt;  // contribution to pressure from "left" walls
+    //         }
+    //         if (r[i+j]>=L) {
+    //             v[i+j]*=-1.;  //- elastic walls
+    //             psum += 2*m*fabs(v[i+j])/dt;  // contribution to pressure from "right" walls
+    //         }
+    //     }
+    // }
+    
     
     /* removed, uncomment to save atoms positions */
     /*for (i=0; i<N; i++) {
@@ -618,33 +626,33 @@ double VelocityVerlet(double dt, int iter, FILE *fp) {
     }*/
     //fprintf(fp,"\n \n");
     
-    // psum *= 2*m/dt; //* Pus em evidencia estes fatores, em todas as multiplicações -tag3
-    return (psum*m)/(3*L*L*dt); //* fiz aqui uma limpeza matematica -tag3
+    return psum/(6*L*L);
 }
 
 
 void initializeVelocities() {
     
     int i, j;
+    int N3 = N*3;
     // Vcm = sum_i^N  m*v_i/  sum_i^N  M
     // Compute center-of-mas velocity according to the formula above
     double vCM[3] = {0, 0, 0};
     
-    for (i=0; i<N; i++) {
-        
+    for (i=0; i<N3; i+=3) {
         for (j=0; j<3; j++) {
             //  Pull a number from a Gaussian Distribution
-            v[i][j] = gaussdist();
+            v[i+j] = gaussdist();
             //* Também pus esta operação dentro deste ciclo -tag2
-            vCM[j] += v[i][j]; //* Retirei a multiplicação por m, uma vez que mais tarde se divide por m (epsilon4 tratamento) -tag1
+            vCM[j] += v[i+j]; //* Retirei a multiplicação por m, uma vez que mais tarde se divide por m (epsilon4 tratamento) -tag1
         }
     }
     
-    /* //* Ciclo inutilizado devido à importanção da sua instrução -tag2
-    for (i=0; i<N; i++) {
-        for (j=0; j<3; j++) {
-        }
-    }*/
+    //* Ciclo inutilizado devido à importanção da sua instrução -tag2
+    // for (i=0; i<N3; i+=3) {
+    //     for (j=0; j<3; j++) {
+    //     }
+    // }
+
     
     for (i=0; i<3; i++) vCM[i] /= N; //* Retirei a divisão por m, uma vez que mais antes se multiplica por m (epsilon4 tratamento) -tag1
     
@@ -652,10 +660,10 @@ void initializeVelocities() {
     //  velocity of each particle... effectively set the
     //  center of mass velocity to zero so that the system does
     //  not drift in space!
-    for (i=0; i<N; i++) {
+    for (i=0; i<N3; i+=3) {
         for (j=0; j<3; j++) {
             
-            v[i][j] -= vCM[j];
+            v[i+j] -= vCM[j];
             
         }
     }
@@ -664,21 +672,18 @@ void initializeVelocities() {
     //  by a factor which is consistent with our initial temperature, Tinit
     double vSqdSum, lambda;
     vSqdSum=0.;
-    for (i=0; i<N; i++) {
+    for (i=0; i<N3; i+=3) {
         for (j=0; j<3; j++) {
             
-            vSqdSum += v[i][j]*v[i][j];
-            
+            vSqdSum += v[i+j]*v[i+j];
+
         }
     }
     
-    lambda = sqrt( 3*(N-1)*Tinit/vSqdSum);
-    
-    for (i=0; i<N; i++) {
+    lambda = sqrt( 3*(N-1)*Tinit/vSqdSum); //! Analisar isto pra brevidade matematica
+    for (i=0; i<N3; i+=3) {
         for (j=0; j<3; j++) {
-            
-            v[i][j] *= lambda;
-            
+            v[i+j] *= lambda;
         }
     }
 }
