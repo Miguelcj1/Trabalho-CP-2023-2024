@@ -468,26 +468,28 @@ double Potential() {
     
     Pot=0.;
     for (i=0; i<N; i++) {
-        for (j=0; j<N; j++) {
+        for (j=0; j<i; j++) {
+            // Desenrolei um ciclo for(k<3) para reduzir o número de instruções de controlo do ciclo (com o input padrao, reduziu em 1 bilião o #I)
+            r2  = (r[i][0]-r[j][0])*(r[i][0]-r[j][0]) + (r[i][1]-r[j][1])*(r[i][1]-r[j][1]) + (r[i][2]-r[j][2])*(r[i][2]-r[j][2]);
+            // rnorm e quot tornam-se inuteis após a transformação matemática
+            // rnorm=sqrt(r2);
+            // quot=sigma/rnorm;
+            // term2 pode ser calculado a partir de sigma^6 e r2^3.
+            // term1 pode ser calculado a partir de sigma^12 e r2^6 ou term2^2.
+            term2 = sigma6/(r2*r2*r2);
+            term1 = term2*term2;
+            
+            // invés de fazer sempre a multiplicação de epsilon*4 
+            // podemos armazenar esse valor em uma variável e assim reduzir o #I.
+            Pot += term1 - term2;
+        }
+        // Este segundo for loop foi criado para remover o if(j!=i). Houve uma melhoria de 41.6B para 34.1B de #I
+        for (j=i+1; j<N; j++){
+            r2  = (r[i][0]-r[j][0])*(r[i][0]-r[j][0]) + (r[i][1]-r[j][1])*(r[i][1]-r[j][1]) + (r[i][2]-r[j][2])*(r[i][2]-r[j][2]);
+            term2 = sigma6/(r2*r2*r2);
+            term1 = term2*term2;
 
-            if (j!=i) {
-                // Desenrolei um ciclo for(k<3) para reduzir o número de instruções de controlo do ciclo (com o input padrao, reduziu em 1 bilião o #I)
-                r2  = (r[i][0]-r[j][0])*(r[i][0]-r[j][0]) + (r[i][1]-r[j][1])*(r[i][1]-r[j][1]) + (r[i][2]-r[j][2])*(r[i][2]-r[j][2]);
-
-                // rnorm e quot tornam-se inuteis após a transformação matemática
-                // rnorm=sqrt(r2);
-                // quot=sigma/rnorm;
-
-                // term2 pode ser calculado a partir de sigma^6 e r2^3.
-                // term1 pode ser calculado a partir de sigma^12 e r2^6 ou term2^2.
-                term2 = sigma6/(r2*r2*r2);
-                term1 = term2*term2;
-                
-                // invés de fazer sempre a multiplicação de epsilon*4 
-                // podemos armazenar esse valor em uma variável e assim reduzir o #I.
-                Pot += term1 - term2;
-                
-            }
+            Pot += term1 - term2;
         }
     }
     return Pot*epsilon*4;
