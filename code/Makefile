@@ -3,7 +3,7 @@ SRC = src/
 # CFLAGS = -O2
 # CFLAGS = -O2 -funroll-loops
 # CFLAGS = -O3
-CFLAGS = -O3 -ftree-vectorize -msse4
+CFLAGS = -O3 -ftree-vectorize -msse4 -fno-omit-frame-pointer
 
 
 .DEFAULT_GOAL = MD.exe
