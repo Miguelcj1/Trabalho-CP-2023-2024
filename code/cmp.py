@@ -9,6 +9,7 @@ def are_files_equal(file1, file2):
 
     # Check if the number of lines in both files is the same
     if len(lines1) != len(lines2):
+        print("Number of lines is different.")
         return False
 
     line = 2
