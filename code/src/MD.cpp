@@ -57,6 +57,8 @@ double a[MAXPART][3];
 //  Force
 double F[MAXPART][3];
 
+double P;
+
 // atom type
 char atype[10];
 //  Function prototypes
@@ -310,7 +312,8 @@ int main()
         //  We would also like to use the IGL to try to see if we can extract the gas constant
         mvs = MeanSquaredVelocity();
         KE = Kinetic();
-        PE = Potential();
+        // PE = Potential();
+        PE = P;
         
         // Temperature from Kinetic Theory
         Temp = m*mvs/(3*kB) * TempFac;
@@ -490,9 +493,12 @@ void computeAccelerations() {
     double f, rSqd;
     double rij[3]; // position of i relative to j
 
-    double rSqd3, rSqd7, rijF;
+    double rSqd3, rSqd7;
     double ai0, ai1, ai2;
     
+    double sigma6, term1, term2, r2; // Variaveis da função Potencial
+    sigma6 = sigma*sigma*sigma*sigma*sigma*sigma;
+    P = 0;
     
     for (i = 0; i < N; i++) {  // set all accelerations to zero
         //* Removed k cycle for less control cycle instructions 
@@ -517,7 +523,7 @@ void computeAccelerations() {
             rij[0] = r[i][0] - r[j][0];
             rij[1] = r[i][1] - r[j][1];
             rij[2] = r[i][2] - r[j][2];
-            rSqd = rij[0] * rij[0] + rij[1] * rij[1] + rij[2] * rij[2];
+            rSqd = r2 = rij[0] * rij[0] + rij[1] * rij[1] + rij[2] * rij[2];
                         
             //  From derivative of Lennard-Jones with sigma and epsilon set equal to 1 in natural units!
             //f = 24 * (2 * pow(rSqd, -7) - pow(rSqd, -4));
@@ -531,6 +537,12 @@ void computeAccelerations() {
             // (=) f = 48/rSqd^7 - 24/rSqd^4 (=) f = (48-24*rSqd^3)/rSqd^7
             f = (48-24*rSqd3)/rSqd7;
             
+
+            // Operações da função Potencial
+            term2 = sigma6/(r2*r2*r2);
+            term1 = term2*term2;
+            P += term1 - term2;
+
             ai0     += rij[0]*f;
             a[j][0] -= rij[0]*f;
             ai1     += rij[1]*f;
@@ -551,6 +563,9 @@ void computeAccelerations() {
         a[i][1] += ai1;
         a[i][2] += ai2;
     }
+
+    P *= 8*epsilon;
+
 }
 
 // returns sum of dv/dt*m/A (aka Pressure) from elastic collisions with walls
