@@ -57,6 +57,7 @@ double a[MAXPART][3];
 //  Force
 double F[MAXPART][3];
 
+// Variável global criada para evitar o uso da função Potencial(), armazenando aqui o valor que a função Potential retornaria.
 double P;
 
 // atom type
@@ -302,7 +303,7 @@ int main()
         // This updates the positions and velocities using Newton's Laws
         // Also computes the Pressure as the sum of momentum changes from wall collisions / timestep
         // which is a Kinetic Theory of gasses concept of Pressure
-        Press = VelocityVerlet(dt, i+1, tfp);
+        Press = VelocityVerlet(dt, i+1, tfp); //* Aqui ocorre a chamada da função computeAccelerations(), concretizando o valor de P
         Press *= PressFac;
         
         //  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -444,9 +445,11 @@ double Kinetic() { //Write Function here!
         
         v2 = 0.;
         for (int j=0; j<3; j++) {
+
             v2 += v[i][j]*v[i][j];
+
         }
-        kin += v2; //* Removed *m/2 and pus em evidencia no return
+        kin += v2; //* Removed *m/2 and put in evidence in the return value
         
     }
     
@@ -456,24 +459,24 @@ double Kinetic() { //Write Function here!
 }
 
 
+//! UNUSED FUNCTION
 // Function to calculate the potential energy of the system
+/*
 double Potential() {
-    double r2, term1, term2, Pot;
     int i, j;
+    double r2, term1, term2, Pot, sigma6;
+    double rij[3];
 
-    // r2_3 é a variável que irá armazenar r2^3.
-    // sigma6 é a variável que irá armazenar sigma^6.
-    // epsilon4 é a variável que irá armazenar epsilon*4.
-    // Estas variáveis surgem após uma análise matemática das operações feitas pela função.
-    // Elas irão permitir uma redução significativa no número de instruções da função 
-    double r2_3, sigma6, epsilon4;
     sigma6 = sigma*sigma*sigma*sigma*sigma*sigma;
     
     Pot=0.;
     for (i=0; i<N; i++) {
-        // Este segundo for loop foi criado para remover o if(j!=i). Houve uma melhoria de 41.6B para 34.1B de #I
+        // Este segundo for loop foi criado para remover o if(j!=i). Houve uma melhoria de 41.6B para 34.1B de #I //! OutDate comment
         for (j=i+1; j<N; j++){
-            r2  = (r[i][0]-r[j][0])*(r[i][0]-r[j][0]) + (r[i][1]-r[j][1])*(r[i][1]-r[j][1]) + (r[i][2]-r[j][2])*(r[i][2]-r[j][2]);
+            rij[0] = r[i][0] - r[j][0];
+            rij[1] = r[i][1] - r[j][1];
+            rij[2] = r[i][2] - r[j][2];
+            r2 = rij[0] * rij[0] + rij[1] * rij[1] + rij[2] * rij[2];
             term2 = sigma6/(r2*r2*r2);
             term1 = term2*term2;
 
@@ -482,7 +485,7 @@ double Potential() {
     }
     return Pot*epsilon*8;
 }
-
+*/
 
 
 //   Uses the derivative of the Lennard-Jones potential to calculate
@@ -490,10 +493,9 @@ double Potential() {
 //   accelleration of each atom. 
 void computeAccelerations() {
     int i, j, k;
-    double f, rSqd;
+    double f, rSqd, rSqd3, rSqd7;
     double rij[3]; // position of i relative to j
 
-    double rSqd3, rSqd7;
     double ai0, ai1, ai2;
     
     double sigma6, term1, term2, r2; // Variaveis da função Potencial
@@ -509,16 +511,6 @@ void computeAccelerations() {
     for (i = 0; i < N-1; i++) {   // loop over all distinct pairs i,j
         ai0=0; ai1=0; ai2=0;
         for (j = i+1; j < N; j++) {
-            // initialize r^2 to zero
-            /*
-            rSqd = 0;
-            for (k = 0; k < 3; k++) {
-                //  component-by-componenent position of i relative to j
-                rij[k] = r[i][k] - r[j][k];
-                //  sum of squares of the components
-                rSqd += rij[k] * rij[k];
-            }
-            */
             //* Desenrolei o ciclo for(k<3) para reduzir o número de instruções de controlo do ciclo
             rij[0] = r[i][0] - r[j][0];
             rij[1] = r[i][1] - r[j][1];
@@ -530,7 +522,7 @@ void computeAccelerations() {
 
             // Evitar o uso da função pow()
             rSqd3 = rSqd*rSqd*rSqd;
-            rSqd7 = rSqd3*rSqd3*rSqd; //* Usar rsqd3 nesta conta é melhor que usar rSqd^7 confirmadamente
+            rSqd7 = rSqd3*rSqd3*rSqd; //* Usar rsqd3 nesta conta é melhor que usar rSqd^7
 
             // Matemáticamente equivalente a f = 24 * (2 * pow(rSqd, -7) - pow(rSqd, -4));
             //     f = 24 * (2*rSqd^(-7) - rSqd^(-4)) (=) f = 24 * (2/rSqd^(7) - 1/rSqd^(4)) (=)
@@ -573,7 +565,6 @@ double VelocityVerlet(double dt, int iter, FILE *fp) {
     int i, j, k;
     
     double psum = 0.;
-    
     double aijDT;
     
     //  Compute accelerations from forces at current position
@@ -599,12 +590,10 @@ double VelocityVerlet(double dt, int iter, FILE *fp) {
             v[i][j] += 0.5*a[i][j]*dt;
             if (r[i][j]<0.) {
                 v[i][j] *=-1.; //- elastic walls
-                //* psum += 2*m*fabs(v[i][j])/dt;  // contribution to pressure from "left" walls -tag3
                 psum += fabs(v[i][j]);  // contribution to pressure from "left" walls
             }
             if (r[i][j]>=L) {
                 v[i][j]*=-1.;  //- elastic walls
-                //* psum += 2*m*fabs(v[i][j])/dt;  // contribution to pressure from "right" walls -tag3
                 psum += fabs(v[i][j]);  // contribution to pressure from "right" walls
             }
         }
@@ -620,8 +609,8 @@ double VelocityVerlet(double dt, int iter, FILE *fp) {
     }*/
     //fprintf(fp,"\n \n");
     
-    // psum *= 2*m/dt; //* Pus em evidencia estes fatores, em todas as multiplicações -tag3
-    return (psum*m)/(3*L*L*dt); //* fiz aqui uma limpeza matematica -tag3
+    // psum *= 2*m/dt; //* Usage of distributive property, where these factors where distributed in the sums of the previous cycle -tag3
+    return (psum*m)/(3*L*L*dt); //* Simplified the math, so it doesn't do some extra multiplications and divisions -tag3
 }
 
 
