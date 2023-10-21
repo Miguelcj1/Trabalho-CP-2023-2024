@@ -58,7 +58,7 @@ double a[MAXPART][3];
 double F[MAXPART][3];
 
 // Variável global criada para evitar o uso da função Potencial(), armazenando aqui o valor que a função Potential retornaria.
-double P;
+double Potential;
 
 // atom type
 char atype[10];
@@ -77,7 +77,7 @@ double gaussdist();
 //  Initialize velocities according to user-supplied initial Temperature (Tinit)
 void initializeVelocities();
 //  Compute total potential energy from particle coordinates
-double Potential();
+// double Potential();
 //  Compute mean squared velocity from particle velocities
 double MeanSquaredVelocity();
 //  Compute total kinetic energy from particle mass and velocities
@@ -314,7 +314,7 @@ int main()
         mvs = MeanSquaredVelocity();
         KE = Kinetic();
         // PE = Potential();
-        PE = P;
+        PE = Potential;
         
         // Temperature from Kinetic Theory
         Temp = m*mvs/(3*kB) * TempFac;
@@ -498,9 +498,9 @@ void computeAccelerations() {
 
     double ai0, ai1, ai2;
     
-    double sigma6, term1, term2, r2; // Variaveis da função Potencial
+    double sigma6, term1, term2; // Variaveis da função Potencial
     sigma6 = sigma*sigma*sigma*sigma*sigma*sigma;
-    P = 0;
+    Potential = 0;
     
     for (i = 0; i < N; i++) {  // set all accelerations to zero
         //* Removed k cycle for less control cycle instructions 
@@ -515,7 +515,7 @@ void computeAccelerations() {
             rij[0] = r[i][0] - r[j][0];
             rij[1] = r[i][1] - r[j][1];
             rij[2] = r[i][2] - r[j][2];
-            rSqd = r2 = rij[0] * rij[0] + rij[1] * rij[1] + rij[2] * rij[2];
+            rSqd = rij[0] * rij[0] + rij[1] * rij[1] + rij[2] * rij[2];
                         
             //  From derivative of Lennard-Jones with sigma and epsilon set equal to 1 in natural units!
             //f = 24 * (2 * pow(rSqd, -7) - pow(rSqd, -4));
@@ -531,9 +531,9 @@ void computeAccelerations() {
             
 
             // Operações da função Potencial
-            term2 = sigma6/(r2*r2*r2);
+            term2 = sigma6/(rSqd*rSqd*rSqd);
             term1 = term2*term2;
-            P += term1 - term2;
+            Potential += term1 - term2;
 
             ai0     += rij[0]*f;
             a[j][0] -= rij[0]*f;
@@ -556,7 +556,7 @@ void computeAccelerations() {
         a[i][2] += ai2;
     }
 
-    P *= 8*epsilon;
+    Potential *= 8*epsilon;
 
 }
 
