@@ -471,7 +471,6 @@ double Potential() {
     
     Pot=0.;
     for (i=0; i<N; i++) {
-        // Este segundo for loop foi criado para remover o if(j!=i). Houve uma melhoria de 41.6B para 34.1B de #I //! OutDate comment
         for (j=i+1; j<N; j++){
             rij[0] = r[i][0] - r[j][0];
             rij[1] = r[i][1] - r[j][1];
@@ -627,15 +626,9 @@ void initializeVelocities() {
             //  Pull a number from a Gaussian Distribution
             v[i][j] = gaussdist();
             //* Também pus esta operação dentro deste ciclo -tag2
-            vCM[j] += v[i][j]; //* Retirei a multiplicação por m, uma vez que mais tarde se divide por m (epsilon4 tratamento) -tag1
+            vCM[j] += v[i][j]; //* Retirei a multiplicação por m, uma vez que mais tarde se divide por m -tag1
         }
     }
-    
-    /* //* Ciclo inutilizado devido à importanção da sua instrução -tag2
-    for (i=0; i<N; i++) {
-        for (j=0; j<3; j++) {
-        }
-    }*/
     
     for (i=0; i<3; i++) vCM[i] /= N; //* Retirei a divisão por m, uma vez que anteriormente se multiplica por m (epsilon4 tratamento) -tag1
     
