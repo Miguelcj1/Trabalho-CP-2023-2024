@@ -459,7 +459,7 @@ double Kinetic() { //Write Function here!
 }
 
 
-//! UNUSED FUNCTION
+// Unused Function - Fused with computeAccelerations()
 // Function to calculate the potential energy of the system
 /*
 double Potential() {
@@ -491,7 +491,7 @@ double Potential() {
 //   the forces on each atom.  Then uses a = F/m to calculate the
 //   accelleration of each atom. 
 void computeAccelerations() {
-    int i, j, k;
+    int i, j;
     double f, rSqd, rSqd3, rSqd7;
     double rij[3]; // position of i relative to j
 
@@ -523,9 +523,6 @@ void computeAccelerations() {
             rSqd3 = rSqd*rSqd*rSqd;
             rSqd7 = rSqd3*rSqd3*rSqd; //* Usar rsqd3 nesta conta é melhor que usar rSqd^7
 
-            // Matemáticamente equivalente a f = 24 * (2 * pow(rSqd, -7) - pow(rSqd, -4));
-            //     f = 24 * (2*rSqd^(-7) - rSqd^(-4)) (=) f = 24 * (2/rSqd^(7) - 1/rSqd^(4)) (=)
-            // (=) f = 48/rSqd^7 - 24/rSqd^4 (=) f = (48-24*rSqd^3)/rSqd^7
             f = (48-24*rSqd3)/rSqd7;
             
 
