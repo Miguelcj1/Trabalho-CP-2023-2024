@@ -303,7 +303,7 @@ int main()
         // This updates the positions and velocities using Newton's Laws
         // Also computes the Pressure as the sum of momentum changes from wall collisions / timestep
         // which is a Kinetic Theory of gasses concept of Pressure
-        Press = VelocityVerlet(dt, i+1, tfp); //* Aqui ocorre a chamada da função computeAccelerations(), concretizando o valor de P
+        Press = VelocityVerlet(dt, i+1, tfp); //* Aqui ocorre a chamada da função computeAccelerations(), concretizando o valor de Potential
         Press *= PressFac;
         
         //  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -637,7 +637,7 @@ void initializeVelocities() {
         }
     }*/
     
-    for (i=0; i<3; i++) vCM[i] /= N; //* Retirei a divisão por m, uma vez que mais antes se multiplica por m (epsilon4 tratamento) -tag1
+    for (i=0; i<3; i++) vCM[i] /= N; //* Retirei a divisão por m, uma vez que anteriormente se multiplica por m (epsilon4 tratamento) -tag1
     
     //  Subtract out the center-of-mass velocity from the
     //  velocity of each particle... effectively set the
