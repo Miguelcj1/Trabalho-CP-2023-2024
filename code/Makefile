@@ -30,6 +30,17 @@ perf:
 perfseq:
 	srun --partition=cpar perf stat -e instructions,cycles,L1-dcache-load-misses ./MDseq.exe < inputdata.txt
 
+gprof: $(SRC)/MDpar.cpp
+	$(CC) $(CFLAGS) -pg $(SRC)MDpar.cpp -lm -fopenmp -o MDpar.exe 
+
+graph:
+	gprof MD.exe > relatorio.txt
+	gprof2dot -f prof relatorio.txt -o grafo.dot
+	dot -Tpng -o grafo.png grafo.dot
+
+scp:
+	scp cp:Trabalho-CP-2023-2024/code/gmon.out .
+	scp cp:Trabalho-CP-2023-2024/code/MDpar.exe .
 
 re:
 	make clean
