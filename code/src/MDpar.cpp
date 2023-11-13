@@ -27,6 +27,7 @@
 #include<stdlib.h>
 #include<math.h>
 #include<string.h>
+#include <omp.h>
 
 // Number of particles
 int N;
@@ -509,7 +510,7 @@ void computeAccelerations() {
         a[i][1] = 0;
         a[i][2] = 0;
     }
-    for (i = 0; i < N-1; i++) {   // loop over all distinct pairs i,j
+        for (i = 0; i < N-1; i++) {   // loop over all distinct pairs i,j
         ai0=0; ai1=0; ai2=0;
         for (j = i+1; j < N; j++) {
             //* Desenrolei o ciclo for(k<3) para reduzir o número de instruções de controlo do ciclo
