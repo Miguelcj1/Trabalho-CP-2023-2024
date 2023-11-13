@@ -34,7 +34,7 @@ gprof: $(SRC)/MDpar.cpp
 	$(CC) $(CFLAGS) -pg $(SRC)MDpar.cpp -lm -fopenmp -o MDpar.exe 
 
 graph:
-	gprof MD.exe > relatorio.txt
+	gprof MDpar.exe > relatorio.txt
 	gprof2dot -f prof relatorio.txt -o grafo.dot
 	dot -Tpng -o grafo.png grafo.dot
 
