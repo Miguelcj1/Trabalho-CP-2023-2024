@@ -24,6 +24,8 @@ runseq:
 runpar:
 	./MDpar.exe < inputdata.txt
 
+# Extras
+
 perf:
 	sbatch --partition=cpar --cpus-per-task=4 perf.sh
 
@@ -46,3 +48,6 @@ re:
 	make clean
 	make MDpar.exe
 	make perf
+
+cmp:
+	./cmp.sh
