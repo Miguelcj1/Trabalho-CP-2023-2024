@@ -24,7 +24,7 @@ def are_files_equal(file1, file2):
             val1_12=val1.replace(".", "")[0:12]
             val2_12=val2.replace(".", "")[0:12]
             if val1_12 != val2_12:
-                print(f"Line {line} is different, comparing {file1} and {file2}")
+                print("Line {} is different: {} | {}".format(line, val1, val2))
                 return False
         line += 1
     return True

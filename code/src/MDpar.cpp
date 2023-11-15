@@ -521,8 +521,6 @@ void computeAccelerations() {
             rij[2] = r[i][2] - r[j][2];
             rSqd = rij[0] * rij[0] + rij[1] * rij[1] + rij[2] * rij[2];
                         
-            //  From derivative of Lennard-Jones with sigma and epsilon set equal to 1 in natural units!
-            //f = 24 * (2 * pow(rSqd, -7) - pow(rSqd, -4));
 
             // Evitar o uso da função pow()
             rSqd3 = rSqd*rSqd*rSqd;
@@ -592,17 +590,6 @@ double VelocityVerlet(double dt, int iter, FILE *fp) {
         }
     }
     
-    /* removed, uncomment to save atoms positions */
-    /*for (i=0; i<N; i++) {
-        fprintf(fp,"%s",atype);
-        for (j=0; j<3; j++) {
-            fprintf(fp,"  %12.10e ",r[i][j]);
-        }
-        fprintf(fp,"\n");
-    }*/
-    //fprintf(fp,"\n \n");
-    
-    // psum *= 2*m/dt; //* Usage of distributive property, where these factors where distributed in the sums of the previous cycle -tag3
     return (psum*m)/(3*L*L*dt); //* Simplified the math, so it doesn't do some extra multiplications and divisions -tag3
 }
 
