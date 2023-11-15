@@ -18,7 +18,7 @@ MDpar.exe: $(SRC)/MDpar.cpp
 clean:
 	rm -f ./MD*.exe
 	rm -f cp_average.txt cp_output.txt cp_traj.xyz
-    rm -f gmon.out grafo.dot
+	rm -f gmon.out grafo.dot
 
 runseq:
 	./MDseq.exe < inputdata.txt
