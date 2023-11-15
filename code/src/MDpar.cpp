@@ -494,7 +494,7 @@ double Potential() {
 //   the forces on each atom.  Then uses a = F/m to calculate the
 //   accelleration of each atom. 
 void computeAccelerations() {
-    int i, j;
+    // int i, j;
     double f, rSqd, rSqd3, rSqd7;
     double rij[3]; // position of i relative to j
 
@@ -504,15 +504,17 @@ void computeAccelerations() {
     sigma6 = sigma*sigma*sigma*sigma*sigma*sigma;
     Potential = 0;
     
-    for (i = 0; i < N; i++) {  // set all accelerations to zero
+    for (int i = 0; i < N; i++) {  // set all accelerations to zero
         //* Removed k cycle for less control cycle instructions 
         a[i][0] = 0;
         a[i][1] = 0;
         a[i][2] = 0;
     }
-        for (i = 0; i < N-1; i++) {   // loop over all distinct pairs i,j
+
+    #pragma omp parallel for reduction(+:Potential) private(rij, rSqd, rSqd3, rSqd7, f, ai0, ai1, ai2, term1, term2)
+    for (int i = 0; i < N-1; i++) {   // loop over all distinct pairs i,j
         ai0=0; ai1=0; ai2=0;
-        for (j = i+1; j < N; j++) {
+        for (int j = i+1; j < N; j++) {
             //* Desenrolei o ciclo for(k<3) para reduzir o número de instruções de controlo do ciclo
             rij[0] = r[i][0] - r[j][0];
             rij[1] = r[i][1] - r[j][1];

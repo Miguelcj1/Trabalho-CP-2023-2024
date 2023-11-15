@@ -1,6 +1,7 @@
 CC = gcc
 SRC = src/
 CFLAGS = -O2 -ftree-vectorize -msse4
+CORES = 4
 
 # .DEFAULT_GOAL = all  #! Mudar para a entrega
 .DEFAULT_GOAL = MDpar.exe
@@ -29,7 +30,10 @@ runpar:
 # Extras
 
 perf:
-	sbatch --partition=cpar --cpus-per-task=4 perf.sh
+	sbatch --partition=cpar --cpus-per-task=$(CORES) perf.sh
+
+perfsrun:
+	srun --partition=cpar --cpus-per-task=$(CORES) perf stat -e instructions,cycles ./MDpar.exe < inputdata.txt
 
 perfseq:
 	srun --partition=cpar perf stat -e instructions,cycles,L1-dcache-load-misses ./MDseq.exe < inputdata.txt
