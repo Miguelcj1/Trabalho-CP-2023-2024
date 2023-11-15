@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Set the file paths for the three sets of two files
-average_base="../documentation/base/cp_average.txt"
+average_base="../documentation/base2/cp_average.txt"
 average_new="./cp_average.txt"
-output_base="../documentation/base/cp_output.txt"
+output_base="../documentation/base2/cp_output.txt"
 output_new="./cp_output.txt"
-traj_base="../documentation/base/cp_traj.xyz"
+traj_base="../documentation/base2/cp_traj.xyz"
 traj_new="./cp_traj.xyz"
 
 #* Compare the first set of files

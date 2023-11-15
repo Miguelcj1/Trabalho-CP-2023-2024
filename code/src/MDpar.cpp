@@ -541,14 +541,6 @@ void computeAccelerations() {
             ai2     += rij[2]*f;
             a[j][2] -= rij[2]*f;
             
-            //* Transformed these instructions to the ones on top and bottom.
-            /* for (k = 0; k < 3; k++) {
-                //  from F = ma, where m = 1 in natural units!
-                // Para fazer esta multiplicação apenas 1 vez por ciclo.
-                a[i][k] += rij[k] * f;
-                a[j][k] -= rij[k] * f;
-            } */
-            
         }
         a[i][0] += ai0;
         a[i][1] += ai1;

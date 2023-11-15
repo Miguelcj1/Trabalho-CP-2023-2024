@@ -25,7 +25,7 @@ runpar:
 	./MDpar.exe < inputdata.txt
 
 perf:
-	srun --partition=cpar perf stat -e instructions,cycles,L1-dcache-load-misses ./MDpar.exe < inputdata.txt
+	sbatch --partition=cpar --cpus-per-task=4 perf.sh
 
 perfseq:
 	srun --partition=cpar perf stat -e instructions,cycles,L1-dcache-load-misses ./MDseq.exe < inputdata.txt
