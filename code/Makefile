@@ -1,7 +1,7 @@
 CC = gcc
 SRC = src/
 CFLAGS = -O2 -ftree-vectorize -msse4
-CORES = 4
+CORES = 8
 
 # .DEFAULT_GOAL = all  #! Mudar para a entrega
 .DEFAULT_GOAL = MDpar.exe
@@ -20,6 +20,7 @@ clean:
 	rm -f ./MD*.exe
 	rm -f cp_average.txt cp_output.txt cp_traj.xyz
 	rm -f gmon.out grafo.dot
+	rm -f slurm*.out
 
 runseq:
 	./MDseq.exe < inputdata.txt
@@ -32,7 +33,7 @@ runpar:
 perf:
 	sbatch --partition=cpar --cpus-per-task=$(CORES) perf.sh
 
-perfsrun:
+srun:
 	srun --partition=cpar --cpus-per-task=$(CORES) perf stat -e instructions,cycles ./MDpar.exe < inputdata.txt
 
 perfseq:
@@ -53,7 +54,7 @@ scp:
 re:
 	make clean
 	make MDpar.exe
-	make perf
+	make srun
 
 cmp:
 	./cmp.sh

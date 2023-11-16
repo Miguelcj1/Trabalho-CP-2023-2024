@@ -504,6 +504,7 @@ void computeAccelerations() {
     sigma6 = sigma*sigma*sigma*sigma*sigma*sigma;
     Potential = 0;
     
+    #pragma omp for
     for (int i = 0; i < N; i++) {  // set all accelerations to zero
         //* Removed k cycle for less control cycle instructions 
         a[i][0] = 0;
@@ -514,25 +515,20 @@ void computeAccelerations() {
     #pragma omp parallel for reduction(+:Potential) private(rij, rSqd, rSqd3, rSqd7, f, ai0, ai1, ai2, term1, term2)
     for (int i = 0; i < N-1; i++) {   // loop over all distinct pairs i,j
         ai0=0; ai1=0; ai2=0;
+        // #pragma omp parallel for reduction(+:Potential, ai0, ai1, ai2) private(rij, rSqd, rSqd3, rSqd7, f, term1, term2)
         for (int j = i+1; j < N; j++) {
             //* Desenrolei o ciclo for(k<3) para reduzir o número de instruções de controlo do ciclo
             rij[0] = r[i][0] - r[j][0];
             rij[1] = r[i][1] - r[j][1];
             rij[2] = r[i][2] - r[j][2];
             rSqd = rij[0] * rij[0] + rij[1] * rij[1] + rij[2] * rij[2];
-                        
-
-            // Evitar o uso da função pow()
             rSqd3 = rSqd*rSqd*rSqd;
-            rSqd7 = rSqd3*rSqd3*rSqd; //* Usar rsqd3 nesta conta é melhor que usar rSqd^7
-
-            f = (48-24*rSqd3)/rSqd7;
             
-
-            // Operações da função Potencial
-            term2 = sigma6/(rSqd*rSqd*rSqd);
-            term1 = term2*term2;
-            Potential += term1 - term2;
+            // TASK 1
+            // Evitar o uso da função pow()
+            rSqd7 = rSqd3*rSqd3*rSqd; //* Usar rsqd3 nesta conta é melhor que usar rSqd^7
+                        
+            f = (48-24*rSqd3)/rSqd7;
 
             ai0     += rij[0]*f;
             a[j][0] -= rij[0]*f;
@@ -540,6 +536,12 @@ void computeAccelerations() {
             a[j][1] -= rij[1]*f;
             ai2     += rij[2]*f;
             a[j][2] -= rij[2]*f;
+
+            // TASK 2
+            // Operações da função Potencial
+            term2 = sigma6/(rSqd3);
+            term1 = term2*term2;
+            Potential += term1 - term2;
             
         }
         a[i][0] += ai0;
