@@ -21,7 +21,7 @@ fi
 # else
 #     echo "output_base files are DIFFERENT"
 # fi
-python cmp.py $output_base $output_new
+python scripts/cmp.py $output_base $output_new
 
 #* Compare the third set of files
 if cmp -s "$traj_base" "$traj_new"; then

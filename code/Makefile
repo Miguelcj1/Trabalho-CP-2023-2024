@@ -29,14 +29,19 @@ runpar:
 	./MDpar.exe < inputdata.txt
 
 # Extras
+cores:
+	./scripts/cores_test.sh
 
+rm_cores:
+	rm core_outputs/job_*_cores.out
+	
 perf:
-	sbatch --partition=cpar --cpus-per-task=$(CORES) perf.sh
+	sbatch --partition=cpar --cpus-per-task=$(CORES) scripts/perf.sh
 
 srun:
 	srun --partition=cpar --cpus-per-task=$(CORES) perf stat -e instructions,cycles ./MDpar.exe < inputdata.txt
 
-perfseq:
+srunseq:
 	srun --partition=cpar perf stat -e instructions,cycles,L1-dcache-load-misses ./MDseq.exe < inputdata.txt
 
 gprof: $(SRC)/MDpar.cpp
@@ -57,4 +62,4 @@ re:
 	make srun
 
 cmp:
-	./cmp.sh
+	./scripts/cmp.sh
