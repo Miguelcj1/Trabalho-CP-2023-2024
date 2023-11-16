@@ -1,7 +1,7 @@
 CC = gcc
 SRC = src/
 CFLAGS = -O2 -ftree-vectorize -msse4
-CORES = 8
+CORES = 12
 
 # .DEFAULT_GOAL = all  #! Mudar para a entrega
 .DEFAULT_GOAL = MDpar.exe

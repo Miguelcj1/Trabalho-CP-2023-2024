@@ -512,7 +512,7 @@ void computeAccelerations() {
         a[i][2] = 0;
     }
 
-    #pragma omp parallel for reduction(+:Potential) private(rij, rSqd, rSqd3, rSqd7, f, ai0, ai1, ai2, term1, term2)
+    #pragma omp parallel for reduction(+:Potential,a[:N][:3]) private(rij, rSqd, rSqd3, rSqd7, f, ai0, ai1, ai2, term1, term2)
     for (int i = 0; i < N-1; i++) {   // loop over all distinct pairs i,j
         ai0=0; ai1=0; ai2=0;
         // #pragma omp parallel for reduction(+:Potential, ai0, ai1, ai2) private(rij, rSqd, rSqd3, rSqd7, f, term1, term2)
