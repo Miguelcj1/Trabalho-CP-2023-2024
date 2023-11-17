@@ -3,8 +3,8 @@ SRC = src/
 CFLAGS = -O2 -ftree-vectorize -msse4
 CORES = 20
 
-.DEFAULT_GOAL = all  #! Mudar para a entrega
-# .DEFAULT_GOAL = MDpar.exe
+# .DEFAULT_GOAL = all  #! Mudar para a entrega
+.DEFAULT_GOAL = MDpar.exe
 
 all: MDseq.exe MDpar.exe
 
@@ -52,6 +52,9 @@ cores:
 
 rm_cores:
 	rm core_outputs/job_*_cores.out
+
+rm_slurm:
+	rm -f slurm*.out
 
 
 gprof: $(SRC)/MDpar.cpp
