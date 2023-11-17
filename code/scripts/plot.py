@@ -76,7 +76,7 @@ plt.plot(x_values, ideal_values, linestyle=':', color='black', marker = 'o', mar
 plt.xlabel('CORES')
 plt.ylabel('Speed Up')
 
-plt.title('CP')
+plt.title('Scalability analysis')
 
 plt.grid(True, linestyle='-', linewidth=0.9, color='gray', alpha=0.8, axis='both', which='major')
 plt.grid(True, linestyle='--', linewidth=0.5, color='gray', alpha=0.8, axis='both', which='minor')
