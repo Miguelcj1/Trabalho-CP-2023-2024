@@ -29,6 +29,8 @@ runpar:
 	./MDpar.exe < inputdata.txt
 
 # Extras
+
+## Faz um sbatch para todas as combinações de cores entre [4..8..40], ficando os outputs armazenados em core_outputs
 cores:
 	./scripts/cores_test.sh
 
@@ -59,7 +61,7 @@ scp:
 re:
 	make clean
 	make MDpar.exe
-	make srun
+	make perf
 
 cmp:
 	./scripts/cmp.sh
