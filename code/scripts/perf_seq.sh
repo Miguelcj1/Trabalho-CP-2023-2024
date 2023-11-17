@@ -1,3 +1,3 @@
 #!/bin/bash
 
-perf stat -e instructions,cycles ./MDseq.exe < inputdata.txt
+perf stat -e instructions,cycles,LLC-loads ./MDseq.exe < inputdata.txt
