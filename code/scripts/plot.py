@@ -7,7 +7,7 @@ import os
 ##! Apenas funciona em máquinas locais, pois não dá para usar matplotlib no cluster.
 
 # Constants
-SEQ_TIME = 23.1639
+SEQ_TIME = 23.219328571
 
 def speedup(time):
     return SEQ_TIME / time

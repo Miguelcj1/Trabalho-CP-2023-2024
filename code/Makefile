@@ -1,10 +1,10 @@
 CC = gcc
 SRC = src/
 CFLAGS = -O2 -ftree-vectorize -msse4
-CORES = 12
+CORES = 20
 
-# .DEFAULT_GOAL = all  #! Mudar para a entrega
-.DEFAULT_GOAL = MDpar.exe
+.DEFAULT_GOAL = all  #! Mudar para a entrega
+# .DEFAULT_GOAL = MDpar.exe
 
 all: MDseq.exe MDpar.exe
 
@@ -30,21 +30,29 @@ runpar:
 
 # Extras
 
+rpar: sbatch
+
+rseq: sbatchseq
+
+sbatch: 
+	sbatch --partition=cpar --cpus-per-task=$(CORES) scripts/perf.sh
+
+srun:
+	srun --partition=cpar --cpus-per-task=$(CORES) perf stat -e instructions,cycles ./MDpar.exe < inputdata.txt
+
+sbatchseq:
+	sbatch --partition=cpar scripts/perf_seq.sh
+
+srunseq:
+	srun --partition=cpar perf stat -e instructions,cycles ./MDseq.exe < inputdata.txt
+
 ## Faz um sbatch para todas as combinações de cores entre [4..8..40], ficando os outputs armazenados em core_outputs
 cores:
 	./scripts/cores_test.sh
 
 rm_cores:
 	rm core_outputs/job_*_cores.out
-	
-perf:
-	sbatch --partition=cpar --cpus-per-task=$(CORES) scripts/perf.sh
 
-srun:
-	srun --partition=cpar --cpus-per-task=$(CORES) perf stat -e instructions,cycles ./MDpar.exe < inputdata.txt
-
-srunseq:
-	srun --partition=cpar perf stat -e instructions,cycles,L1-dcache-load-misses ./MDseq.exe < inputdata.txt
 
 gprof: $(SRC)/MDpar.cpp
 	$(CC) $(CFLAGS) -pg $(SRC)MDpar.cpp -lm -fopenmp -o MDpar.exe 
