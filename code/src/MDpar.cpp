@@ -523,7 +523,6 @@ void computeAccelerations() {
             rSqd = rij[0] * rij[0] + rij[1] * rij[1] + rij[2] * rij[2];
             rSqd3 = rSqd*rSqd*rSqd;
             
-            // TASK 1
             // Evitar o uso da função pow()
             rSqd7 = rSqd3*rSqd3*rSqd; //* Usar rsqd3 nesta conta é melhor que usar rSqd^7
                         
@@ -536,7 +535,6 @@ void computeAccelerations() {
             ai2     += rij[2]*f;
             a[j][2] -= rij[2]*f;
 
-            // TASK 2
             // Operações da função Potencial
             term2 = sigma6/(rSqd3);
             term1 = term2*term2;
