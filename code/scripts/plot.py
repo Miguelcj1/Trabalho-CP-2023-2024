@@ -35,14 +35,15 @@ def read_core_outputs(directory="core_outputs"):
     times = []
     files = os.listdir(directory)
     files = sorted(files, key=lambda x: int(x.split("_")[1]))
-    print(files)
 
     for f in files:
         time = get_seconds_from(directory + "/" + f)
         times.append(time)
-    print(times)
+    
+    for f, time in zip(files, times):
+        print(f,"->", time)
+        
     return times
-
 
 
 
