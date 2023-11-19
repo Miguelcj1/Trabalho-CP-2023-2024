@@ -504,7 +504,6 @@ void computeAccelerations() {
     sigma6 = sigma*sigma*sigma*sigma*sigma*sigma;
     Potential = 0;
     
-    #pragma omp for
     for (int i = 0; i < N; i++) {  // set all accelerations to zero
         //* Removed k cycle for less control cycle instructions 
         a[i][0] = 0;
