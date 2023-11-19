@@ -12,5 +12,5 @@ for CORES in $CORES_LIST; do
     echo "Running SBATCH with $CORES CORES with name $JOB_NAME"
     sbatch --partition=cpar --cpus-per-task=$CORES --output=core_outputs/$JOB_NAME.out scripts/perf.sh
     # sbatch --output=core_outputs/$JOB_NAME.out --partition=cpar --cpus-per-task=$CORES --begin=$START_TIME scripts/perf.sh
-    sleep 10
+    sleep 5
 done
