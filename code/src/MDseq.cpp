@@ -504,7 +504,6 @@ void computeAccelerations() {
     Potential = 0;
     
     for (i = 0; i < N; i++) {  // set all accelerations to zero
-        //* Removed k cycle for less control cycle instructions 
         a[i][0] = 0;
         a[i][1] = 0;
         a[i][2] = 0;
@@ -512,21 +511,15 @@ void computeAccelerations() {
     for (i = 0; i < N-1; i++) {   // loop over all distinct pairs i,j
         ai0=0; ai1=0; ai2=0;
         for (j = i+1; j < N; j++) {
-            //* Desenrolei o ciclo for(k<3) para reduzir o número de instruções de controlo do ciclo
             rij[0] = r[i][0] - r[j][0];
             rij[1] = r[i][1] - r[j][1];
             rij[2] = r[i][2] - r[j][2];
             rSqd = rij[0] * rij[0] + rij[1] * rij[1] + rij[2] * rij[2];
                         
-            //  From derivative of Lennard-Jones with sigma and epsilon set equal to 1 in natural units!
-            //f = 24 * (2 * pow(rSqd, -7) - pow(rSqd, -4));
-
-            // Evitar o uso da função pow()
             rSqd3 = rSqd*rSqd*rSqd;
-            rSqd7 = rSqd3*rSqd3*rSqd; //* Usar rsqd3 nesta conta é melhor que usar rSqd^7
+            rSqd7 = rSqd3*rSqd3*rSqd;
 
             f = (48-24*rSqd3)/rSqd7;
-            
 
             // Operações da função Potencial
             term2 = sigma6/(rSqd*rSqd*rSqd);
@@ -540,14 +533,6 @@ void computeAccelerations() {
             ai2     += rij[2]*f;
             a[j][2] -= rij[2]*f;
             
-            //* Transformed these instructions to the ones on top and bottom.
-            /* for (k = 0; k < 3; k++) {
-                //  from F = ma, where m = 1 in natural units!
-                // Para fazer esta multiplicação apenas 1 vez por ciclo.
-                a[i][k] += rij[k] * f;
-                a[j][k] -= rij[k] * f;
-            } */
-            
         }
         a[i][0] += ai0;
         a[i][1] += ai1;
@@ -555,7 +540,6 @@ void computeAccelerations() {
     }
 
     Potential *= 8*epsilon;
-
 }
 
 // returns sum of dv/dt*m/A (aka Pressure) from elastic collisions with walls
