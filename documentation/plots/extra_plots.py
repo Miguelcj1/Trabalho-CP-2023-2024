@@ -54,7 +54,17 @@ def get_lcc(filename):
     print("Ficheiro:", filename, "->", lcc, "LLC-loads\n")
     return lcc
 
-
+def get_time(filename):
+    """
+    Retorna o tempo em segundos do ficheiro passado como argumento
+    """
+    with open(filename, 'r') as f:
+        for line in f:
+            match = re.search(r'(\d+(?:\,|\.)\d+) seconds time elapsed', line)
+            if match:
+                return float(match.group(1).replace(',', '.'))
+    print("Ocorreu um problema!!!")
+    return 0
 
 
 def read_core_outputs(directory="core_outputs", func = get_i_lcc):
@@ -78,15 +88,16 @@ def read_core_outputs(directory="core_outputs", func = get_i_lcc):
     return values
 
 
-
-#> MAIN
+#! MAIN
 
 # Number of cores
 x_values = list(np.arange(4, 41, 4)) #(start, end, step)
 plt.xlabel('CORES')
 
-#* Configuravéis
-y_values = read_core_outputs("core_outputs", get_lcc) #* 2º argumento configurável
+
+#> Configuravéis
+mylabel = 'Time elapsed (s)'
+y_values = read_core_outputs("core_outputs", get_time) #* 2º argumento configurável
 
 # plt.title('Memory analysis')
 # plt.ylabel('Arithmetic intensity (#I/#LCC)')
@@ -94,11 +105,13 @@ y_values = read_core_outputs("core_outputs", get_lcc) #* 2º argumento configur�
 # plt.title('Instructions analysis')
 # plt.ylabel('Instructions (#I)')
 
-plt.title('LCC analysis')
-plt.ylabel('#LCC') 
+# plt.title('LCC analysis')
+# plt.ylabel('#LCC') 
 
-mylabel = '#LCC'
-##*
+plt.title('Time elapsed')
+plt.ylabel('Execution time (s)') 
+
+##>
 
 plt.plot(x_values, y_values, linestyle='--', color='blue', marker='o', markersize=5, label=mylabel)
 

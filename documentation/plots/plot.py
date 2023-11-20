@@ -7,7 +7,7 @@ import os
 ##! Apenas funciona em máquinas locais, pois não dá para usar matplotlib no cluster.
 
 # Constants
-SEQ_TIME = 23.219328571
+SEQ_TIME = 25.809150864
 
 def speedup(time):
     return SEQ_TIME / time
@@ -15,7 +15,7 @@ def speedup(time):
 def get_seconds_from(filename):
     with open(filename, 'r') as f:
         for line in f:
-            match = re.search(r'(\d+\,\d+) seconds time elapsed', line)
+            match = re.search(r'(\d+(?:\,|\.)\d+) seconds time elapsed', line)
             if match:
                 return float(match.group(1).replace(',', '.'))
     print("Ocorreu um problema!!!")
