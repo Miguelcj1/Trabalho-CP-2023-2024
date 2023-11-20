@@ -50,6 +50,10 @@ srunseq:
 cores:
 	./scripts/cores_test.sh
 
+## Para um numero especifico de cores "make core c=12"
+core:
+	sbatch --partition=cpar --cpus-per-task=$(c) --output=core_outputs/job_${c}_cores.out scripts/perf.sh
+
 rm_cores:
 	rm core_outputs/job_*_cores.out
 
