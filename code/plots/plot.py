@@ -8,6 +8,7 @@ import os
 
 # Constants
 SEQ_TIME = 25.809150864
+OUTPUTS_DIR = "/home/pedro/MEI/CP/core_outputs"
 
 def speedup(time):
     return SEQ_TIME / time
@@ -22,7 +23,7 @@ def get_seconds_from(filename):
     return 0
 
 
-def read_core_outputs(directory="core_outputs"):
+def read_core_outputs(directory):
     """
     Returns a list of times in seconds from the core outputs, ordered by the number of cores crescently
 
@@ -48,21 +49,7 @@ def read_core_outputs(directory="core_outputs"):
 
 
 x_values = list(np.arange(4, 41, 4)) #(start, end, step)
-y_values = read_core_outputs("core_outputs")
-"""
-y_values = [
-    11.83711492, # 4 cores
-    7.79823345,  # 8 cores
-    4.429618154, # 12 cores
-    3.329742445, # 16 cores
-    3.264248948, # 20 cores
-    3.094146565, # 24 cores
-    2.894629863, # 28 cores
-    2.486358823, # 32 cores
-    2.227191343, # 36 cores
-    2.093691082, # 40 cores
-]
-"""
+y_values = read_core_outputs(OUTPUTS_DIR)
 
 ideal_values = [4, 8, 12, 16, 20, 20, 20, 20, 20, 20]
 

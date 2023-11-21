@@ -6,6 +6,7 @@ import os
 ##> Script Python que lê os ficheiros da pasta "core_outputs" e constroi automaticamente um gráfico de tempos
 ##! Apenas funciona em máquinas locais, pois não dá para usar matplotlib no cluster.
 
+OUTPUTS_DIR = "/home/pedro/MEI/CP/core_outputs"
 
 def get_time(filename):
     """
@@ -20,7 +21,7 @@ def get_time(filename):
     return 0
 
 
-def read_core_outputs(directory="core_outputs", func = get_time):
+def read_core_outputs(directory, func = get_time):
     """
     Returns a list of values that "func" returns, from the core outputs, ordered by the number of cores crescently
 
@@ -50,7 +51,7 @@ plt.xlabel('CORES')
 
 #> Configuravéis
 mylabel = 'Time elapsed (s)'
-y_values = read_core_outputs("core_outputs", get_time) #* 2º argumento configurável
+y_values = read_core_outputs(OUTPUTS_DIR, get_time) #* 2º argumento configurável
 
 # plt.title('Memory analysis')
 # plt.ylabel('Arithmetic intensity (#I/#LCC)')
