@@ -3,7 +3,7 @@ SRC = src/
 CFLAGS = -O2 -ftree-vectorize -msse4
 CORES = 40
 
-.DEFAULT_GOAL = all  #! Mudar para a entrega
+.DEFAULT_GOAL = all
 # .DEFAULT_GOAL = MDpar.exe
 
 all: MDseq.exe MDpar.exe

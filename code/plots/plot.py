@@ -7,7 +7,7 @@ import os
 ##! Apenas funciona em máquinas locais, pois não dá para usar matplotlib no cluster.
 
 # Constants
-SEQ_TIME = 25.809150864
+SEQ_TIME = 23.809150864
 OUTPUTS_DIR = "/home/pedro/MEI/CP/core_outputs"
 
 def speedup(time):
