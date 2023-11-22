@@ -1,7 +1,7 @@
 CC = gcc
 SRC = src/
 CFLAGS = -O2 -ftree-vectorize -msse4
-CORES = 32
+CORES = 40
 
 .DEFAULT_GOAL = all  #! Mudar para a entrega
 # .DEFAULT_GOAL = MDpar.exe
@@ -26,7 +26,7 @@ runseq:
 	./MDseq.exe < inputdata.txt
 
 runpar:
-	./MDpar.exe < inputdata.txt
+	OMP_NUM_THREADS=$(CORES) ./MDpar.exe < inputdata.txt
 
 # Extras
 
