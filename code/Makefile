@@ -52,7 +52,7 @@ cores:
 
 ## Para um numero especifico de cores "make core c=12"
 core:
-	export OMP_NUM_THREADS=$(c); sbatch --partition=cpar --cpus-per-task=40 --output=core_outputs/job_${c}_cores.out scripts/perf.sh;
+	export OMP_NUM_THREADS=$(c); sbatch --partition=cpar --cpus-per-task=40 --output=core_outputs/job_$(c)_cores.out scripts/perf.sh;
 
 rm_cores:
 	rm core_outputs/job_*_cores.out
