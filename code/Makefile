@@ -1,7 +1,7 @@
 CC = gcc
 SRC = src/
 CFLAGS = -O2 -ftree-vectorize -msse4
-CORES = 40
+THREADS = 40
 
 .DEFAULT_GOAL = all
 # .DEFAULT_GOAL = MDpar.exe
@@ -26,7 +26,7 @@ runseq:
 	./MDseq.exe < inputdata.txt
 
 runpar:
-	OMP_NUM_THREADS=$(CORES) ./MDpar.exe < inputdata.txt
+	OMP_NUM_THREADS=$(THREADS) ./MDpar.exe < inputdata.txt
 
 # Extras
 
@@ -34,11 +34,11 @@ rpar: sbatch
 
 rseq: sbatchseq
 
-sbatch: 
-	sbatch --partition=cpar --cpus-per-task=$(CORES) scripts/perf.sh
+sbatch:
+	export OMP_NUM_THREADS=$(THREADS); sbatch --partition=cpar --cpus-per-task=40 scripts/perf.sh;
 
 srun:
-	srun --partition=cpar --cpus-per-task=$(CORES) perf stat -e instructions,cycles ./MDpar.exe < inputdata.txt
+	export OMP_NUM_THREADS=$(THREADS); srun --partition=cpar --cpus-per-task=40 perf stat -e instructions,cycles ./MDpar.exe < inputdata.txt;
 
 sbatchseq:
 	sbatch --partition=cpar scripts/perf_seq.sh
@@ -46,13 +46,13 @@ sbatchseq:
 srunseq:
 	srun --partition=cpar perf stat -e instructions,cycles ./MDseq.exe < inputdata.txt
 
-## Faz um sbatch para todas as combinações de cores entre [4..8..40], ficando os outputs armazenados em core_outputs
+## Faz um sbatch para todas as combinações de threads entre [4..8..40], ficando os outputs armazenados em core_outputs
 cores:
 	./scripts/cores_test.sh
 
 ## Para um numero especifico de cores "make core c=12"
 core:
-	sbatch --partition=cpar --cpus-per-task=$(c) --output=core_outputs/job_${c}_cores.out scripts/perf.sh
+	export OMP_NUM_THREADS=$(c); sbatch --partition=cpar --cpus-per-task=40 --output=core_outputs/job_${c}_cores.out scripts/perf.sh;
 
 rm_cores:
 	rm core_outputs/job_*_cores.out
