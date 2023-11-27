@@ -26,7 +26,7 @@ runseq:
 	./MDseq.exe < inputdata.txt
 
 runpar:
-	OMP_NUM_THREADS=$(THREADS) ./MDpar.exe < inputdata.txt
+	export OMP_NUM_THREADS=$(THREADS); ./MDpar.exe < inputdata.txt
 
 # Extras
 
