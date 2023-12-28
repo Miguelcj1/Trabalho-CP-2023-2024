@@ -18,7 +18,7 @@ MDpar.exe: $(SRC)/MDpar.cpp
 	$(CC) $(CFLAGS) $(SRC)MDpar.cpp -lm -fopenmp -o MDpar.exe
 
 MDcuda.exe: $(SRC)/MDcuda.cu
-    module load gcc/7.2.0;\
+	module load gcc/7.2.0;\
     module load cuda/11.3.1;\
     nvcc $(CUDAFLAGS) $(SRC)MDcuda.cu -o MDcuda.exe
 
@@ -34,7 +34,7 @@ runpar:
 
 # cuda
 runcuda:
-    module load gcc/7.2.0;\
+	module load gcc/7.2.0;\
     module load cuda/11.3.1;\
     sbatch ./cuda.sh
 
