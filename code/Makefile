@@ -3,7 +3,7 @@ SRC = src/
 CFLAGS = -O2 -ftree-vectorize -msse4
 THREADS = 40
 
-CUDAFLAGS = -O3 -g -std=c++11 -arch=sm_35 -Wno-deprecated-gpu-targets 
+CUDAFLAGS = -O2 -g -std=c++11 -arch=sm_35 -Wno-deprecated-gpu-targets 
 
 .DEFAULT_GOAL = all
 
@@ -35,14 +35,13 @@ runpar:
 runcuda:
 	module load gcc/7.2.0;\
     module load cuda/11.3.1;\
-    sbatch ./cuda.sh
-
-
-
-
+	sbatch ./cuda.sh
 
 
 # Extras
+ccu: MDcuda.exe # Compile Cuda
+
+rcu: runcuda # Run Cuda
 
 # Fase 2
 
