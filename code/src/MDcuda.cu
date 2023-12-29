@@ -93,10 +93,8 @@ void computeAccelerationsCUDA();
 double gaussdist();
 //  Initialize velocities according to user-supplied initial Temperature (Tinit)
 void initializeVelocities();
-void initializeVelocitiesOPT();
 //  Compute mean squared velocity from particle velocities
 double MeanSquaredVelocity();
-double MeanSquaredVelocityOPT();
 //  Compute total kinetic energy from particle mass and velocities
 double Kinetic();
 
