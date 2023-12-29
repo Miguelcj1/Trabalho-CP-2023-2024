@@ -32,7 +32,6 @@ runseq:
 runpar:
 	export OMP_NUM_THREADS=$(THREADS); ./MDpar.exe < inputdata.txt
 
-# cuda
 runcuda:
 	module load gcc/7.2.0;\
     module load cuda/11.3.1;\
