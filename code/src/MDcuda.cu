@@ -305,22 +305,51 @@ int main()
     printf("  PERCENTAGE OF CALCULATION COMPLETE:\n  [");
     for (i=0; i<NumTime+1; i++) {
 
+//  This just prints updates on progress of the calculation for the users convenience
+        if (i==tenp) printf(" 10 |");
+        else if (i==2*tenp) printf(" 20 |");
+        else if (i==3*tenp) printf(" 30 |");
+        else if (i==4*tenp) printf(" 40 |");
+        else if (i==5*tenp) printf(" 50 |");
+        else if (i==6*tenp) printf(" 60 |");
+        else if (i==7*tenp) printf(" 70 |");
+        else if (i==8*tenp) printf(" 80 |");
+        else if (i==9*tenp) printf(" 90 |");
+        else if (i==10*tenp) printf(" 100 ]\n");
+        fflush(stdout);
+        
+        
+        // This updates the positions and velocities using Newton's Laws
+        // Also computes the Pressure as the sum of momentum changes from wall collisions / timestep
+        // which is a Kinetic Theory of gasses concept of Pressure
         Press = VelocityVerlet(dt, i+1, tfp); //* Ocorre uma chamada à função computeAccelerations(), concretizando o valor de Potential. Escreve no array 'v' e 'r'. Lê o array 'a' e 'v'.
         Press *= PressFac;
 
+//  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        //  Now we would like to calculate somethings about the system:
+        //  Instantaneous mean velocity squared, Temperature, Pressure
+        //  Potential, and Kinetic Energy
+        //  We would also like to use the IGL to try to see if we can extract the gas constant
         mvs = MeanSquaredVelocity(); //* apenas lê array v e retorna um double mvs
         KE = Kinetic(); //* apenas lê array v e retorna um double KE
+        // PE = Potential();
         PE = P; //! Potential
-
-        Temp = m * mvs / (3 * kB) * TempFac;
-
-        gc = NA * Press * (Vol * VolFac) / (N * Temp);
-        Z = Press * (Vol * VolFac) / (N * kBSI * Temp);
+        
+        // Temperature from Kinetic Theory
+        Temp = m*mvs/(3*kB) * TempFac;
+        
+        // Instantaneous gas constant and compressibility - not well defined because
+        // pressure may be zero in some instances because there will be zero wall collisions,
+        // pressure may be very high in some instances because there will be a number of collisions
+        gc = NA*Press*(Vol*VolFac)/(N*Temp);
+        Z  = Press*(Vol*VolFac)/(N*kBSI*Temp);
 
         Tavg += Temp;
         Pavg += Press;
 
-        fprintf(ofp, "  %8.4e  %20.8f  %20.8f %20.8f  %20.8f  %20.8f \n", i * dt * timefac, Temp, Press, KE, PE, KE + PE);
+        fprintf(ofp,"  %8.4e  %20.8f  %20.8f %20.8f  %20.8f  %20.8f \n",i*dt*timefac,Temp,Press,KE, PE, KE+PE);
+
+        
     }
 
     // Because we have calculated the instantaneous temperature and pressure,
@@ -383,9 +412,8 @@ void initialize() {
     }
 
     // Call function to initialize velocities
-    // initializeVelocities();
-    initializeVelocitiesOPT();
-
+    initializeVelocities();
+    
     /***********************************************
      *   Uncomment if you want to see what the initial positions and velocities are
      printf("  Printing initial positions!\n");
@@ -398,51 +426,54 @@ void initialize() {
      printf("  %6.3e  %6.3e  %6.3e\n",v[i][0],v[i][1],v[i][2]);
      }
      */
+
+    
+    
 }
+
+
 //  Function to calculate the averaged velocity squared
-double MeanSquaredVelocity()
-{
+double MeanSquaredVelocity() {
 
     double vx2 = 0;
     double vy2 = 0;
     double vz2 = 0;
     double v2;
 
-    for (int i = 0; i < N; i++)
-    {
+    for (int i=0; i<N; i++) {
 
-        vx2 = vx2 + v[i][0] * v[i][0];
-        vy2 = vy2 + v[i][1] * v[i][1];
-        vz2 = vz2 + v[i][2] * v[i][2];
+        vx2 = vx2 + v[i][0]*v[i][0];
+        vy2 = vy2 + v[i][1]*v[i][1];
+        vz2 = vz2 + v[i][2]*v[i][2];
+        
     }
-    v2 = (vx2 + vy2 + vz2) / N;
-
-    // printf("  Average of x-component of velocity squared is %f\n",v2);
+    v2 = (vx2+vy2+vz2)/N;
+    
+    //printf("  Average of x-component of velocity squared is %f\n",v2);
     return v2;
 }
 
 
 //  Function to calculate the kinetic energy of the system
-double Kinetic()
-{ // Write Function here!
+double Kinetic() { //Write Function here!
 
     double v2, kin;
 
-    kin = 0.;
-    for (int i = 0; i < N; i++)
-    {
+    kin =0.;
+    for (int i=0; i<N; i++) {
 
         v2 = 0.;
-        for (int j = 0; j < 3; j++)
-        {
+        for (int j=0; j<3; j++) {
 
-            v2 += v[i][j] * v[i][j];
+            v2 += v[i][j]*v[i][j];
+
         }
-        kin += m * v2 / 2.;
+        kin += v2; //* Removed *m/2 and put in evidence in the return value
+        
     }
 
     // printf("  Total Kinetic Energy is %f\n",N*mvs*m/2.);
-    return kin;
+    return kin*m*0.5;
 }
 
 __device__ double atomicAdd_double(double *address, double val){
@@ -695,134 +726,68 @@ double VelocityVerletOPT(double dt, int iter, FILE *fp)
     return psum / (6 * L * L);
 }
 
-void initializeVelocities()
-{
+void initializeVelocities() {
 
     int i, j;
-
-    for (i = 0; i < N; i++)
-    {
-
-        for (j = 0; j < 3; j++)
-        {
-            //  Pull a number from a Gaussian Distribution
-            v[i][j] = gaussdist();
-        }
-    }
-
     // Vcm = sum_i^N  m*v_i/  sum_i^N  M
     // Compute center-of-mas velocity according to the formula above
     double vCM[3] = {0, 0, 0};
 
-    for (i = 0; i < N; i++)
-    {
-        for (j = 0; j < 3; j++)
-        {
-
-            vCM[j] += m * v[i][j];
+    for (i=0; i<N; i++) {
+        
+        for (j=0; j<3; j++) {
+            //  Pull a number from a Gaussian Distribution
+            v[i][j] = gaussdist();
+            //* Também pus esta operação dentro deste ciclo -tag2
+            vCM[j] += v[i][j]; //* Retirei a multiplicação por m, uma vez que mais tarde se divide por m -tag1
         }
     }
 
-    for (i = 0; i < 3; i++)
-        vCM[i] /= N * m;
+    for (i=0; i<3; i++) vCM[i] /= N; //* Retirei a divisão por m, uma vez que anteriormente se multiplica por m (epsilon4 tratamento) -tag1
 
     //  Subtract out the center-of-mass velocity from the
     //  velocity of each particle... effectively set the
     //  center of mass velocity to zero so that the system does
     //  not drift in space!
-    for (i = 0; i < N; i++)
-    {
-        for (j = 0; j < 3; j++)
-        {
+    for (i=0; i<N; i++) {
+        for (j=0; j<3; j++) {
 
             v[i][j] -= vCM[j];
+
         }
     }
 
     //  Now we want to scale the average velocity of the system
     //  by a factor which is consistent with our initial temperature, Tinit
     double vSqdSum, lambda;
-    vSqdSum = 0.;
-    for (i = 0; i < N; i++)
-    {
-        for (j = 0; j < 3; j++)
-        {
-
-            vSqdSum += v[i][j] * v[i][j];
+    vSqdSum=0.;
+    for (i=0; i<N; i++) {
+        for (j=0; j<3; j++) {
+            
+            vSqdSum += v[i][j]*v[i][j];
+            
         }
     }
 
-    lambda = sqrt(3 * (N - 1) * Tinit / vSqdSum);
+    lambda = sqrt( 3*(N-1)*Tinit/vSqdSum);
 
-    for (i = 0; i < N; i++)
-    {
-        for (j = 0; j < 3; j++)
-        {
+    for (i=0; i<N; i++) {
+        for (j=0; j<3; j++) {
 
             v[i][j] *= lambda;
+
         }
     }
 }
 
-void initializeVelocitiesOPT()
-{
-    int i, j;
-    // Vcm = sum_i^N  m*v_i/  sum_i^N  M
-    // Compute center-of-mas velocity according to the formula above
-    double vCM[3] = {0, 0, 0};
-    double vSqdSum, lambda;
-    vSqdSum = 0.;
-    for (i = 0; i < N; i++)
-    {
-
-        for (j = 0; j < 3; j++)
-        {
-            //  Pull a number from a Gaussian Distribution
-            v[i][j] = gaussdist();
-
-            vCM[j] += m * v[i][j];
-        }
-    }
-
-    for (i = 0; i < 3; i++)
-        vCM[i] /= N * m;
-
-    //  Subtract out the center-of-mass velocity from the
-    //  velocity of each particle... effectively set the
-    //  center of mass velocity to zero so that the system does
-    //  not drift in space!
-    for (i = 0; i < N; i++)
-    {
-        for (j = 0; j < 3; j++)
-        {
-
-            v[i][j] -= vCM[j];
-            vSqdSum += v[i][j] * v[i][j];
-        }
-    }
-
-    lambda = sqrt(3 * (N - 1) * Tinit / vSqdSum);
-
-    for (i = 0; i < N; i++)
-    {
-        for (j = 0; j < 3; j++)
-        {
-
-            v[i][j] *= lambda;
-        }
-    }
-}
 
 //  Numerical recipes Gaussian distribution number generator
-double gaussdist()
-{
+double gaussdist() {
     static bool available = false;
     static double gset;
     double fac, rsq, v1, v2;
-    if (!available)
-    {
-        do
-        {
+    if (!available) {
+        do {
             v1 = 2.0 * rand() / double(RAND_MAX) - 1.0;
             v2 = 2.0 * rand() / double(RAND_MAX) - 1.0;
             rsq = v1 * v1 + v2 * v2;
@@ -832,11 +797,8 @@ double gaussdist()
         gset = v1 * fac;
         available = true;
 
-        return v2 * fac;
-    }
-    else
-    {
-
+        return v2*fac;
+    } else {
         available = false;
         return gset;
     }

@@ -306,7 +306,7 @@ int main()
         // This updates the positions and velocities using Newton's Laws
         // Also computes the Pressure as the sum of momentum changes from wall collisions / timestep
         // which is a Kinetic Theory of gasses concept of Pressure
-        Press = VelocityVerlet(dt, i+1, tfp); //* Aqui ocorre a chamada da função computeAccelerations(), concretizando o valor de Potential
+        Press = VelocityVerlet(dt, i+1, tfp); //* Ocorre uma chamada à função computeAccelerations(), concretizando o valor de Potential. Escreve no array 'v' e 'r'. Lê o array 'a' e 'v'.
         Press *= PressFac;
         
         //  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -314,8 +314,8 @@ int main()
         //  Instantaneous mean velocity squared, Temperature, Pressure
         //  Potential, and Kinetic Energy
         //  We would also like to use the IGL to try to see if we can extract the gas constant
-        mvs = MeanSquaredVelocity();
-        KE = Kinetic();
+        mvs = MeanSquaredVelocity(); //* apenas lê array v e retorna um double mvs
+        KE = Kinetic(); //* apenas lê array v e retorna um double KE
         // PE = Potential();
         PE = Potential;
         
