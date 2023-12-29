@@ -553,7 +553,7 @@ void computeAccelerationsCUDA(){
     cudaMemcpy(d_r, r, N * 3 * sizeof(double), cudaMemcpyHostToDevice);
     checkCUDAError("cudaMemcpy 2");
 
-    int threadsPerBlock = 512;
+    int threadsPerBlock = 16; //> Valor que influencia bastante o tempo de execução. Com 16 é melhor.
     int nBlocks = (N + threadsPerBlock - 1) / threadsPerBlock;
 
     computeAccelerationsKernel<<<nBlocks, threadsPerBlock>>>(d_r, d_a, d_P, N);
