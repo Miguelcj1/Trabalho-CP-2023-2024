@@ -25,13 +25,12 @@
  */
 #include <stdio.h>
 #include <cstdlib>
+#include <math.h>
+#include <string.h>
 #include <iostream>
 #include <sys/time.h>
 #include <cuda.h>
 #include <chrono>
-#include <math.h>
-#include <string.h>
-
 
 using namespace std;
 
@@ -84,7 +83,6 @@ void initialize();
 //  print particle coordinates to file for rendering via VMD or other animation software
 //  return 'instantaneous pressure'
 double VelocityVerlet(double dt, int iter, FILE *fp);
-double VelocityVerletOPT(double dt, int iter, FILE *fp);
 //  Compute Force using F = -dV/dr
 //  solve F = ma for use in Velocity Verlet
 void computeAccelerations();
@@ -93,6 +91,8 @@ void computeAccelerationsCUDA();
 double gaussdist();
 //  Initialize velocities according to user-supplied initial Temperature (Tinit)
 void initializeVelocities();
+//  Compute total potential energy from particle coordinates
+// double Potential();
 //  Compute mean squared velocity from particle velocities
 double MeanSquaredVelocity();
 //  Compute total kinetic energy from particle mass and velocities
@@ -346,7 +346,6 @@ int main()
         Pavg += Press;
 
         fprintf(ofp,"  %8.4e  %20.8f  %20.8f %20.8f  %20.8f  %20.8f \n",i*dt*timefac,Temp,Press,KE, PE, KE+PE);
-
         
     }
 
@@ -446,11 +445,9 @@ double MeanSquaredVelocity() {
         
     }
     v2 = (vx2+vy2+vz2)/N;
-    
     //printf("  Average of x-component of velocity squared is %f\n",v2);
     return v2;
 }
-
 
 //  Function to calculate the kinetic energy of the system
 double Kinetic() { //Write Function here!
@@ -469,7 +466,7 @@ double Kinetic() { //Write Function here!
         kin += v2; //* Removed *m/2 and put in evidence in the return value
     }
 
-    // printf("  Total Kinetic Energy is %f\n",N*mvs*m/2.);
+    //printf("  Total Kinetic Energy is %f\n",N*mvs*m/2.);
     return kin*m*0.5;
 }
 
@@ -490,22 +487,24 @@ __device__ double atomicAdd_double(double *address, double val){
 __global__ void computeAccelerationsKernel(double *r_, double *a_, double *Pot, int N_){
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < N_ - 1){
-        double f, rSqd;
-        double rij[3];
-        double rSqd3, rSqd7, rijf[3], sigma6 = 1.0, term1, term2;
-        double local_a[] = {0.0,0.0,0.0}, ri[] = {r_[i*3],r_[i*3+1],r_[i*3+2]};
-
+        double f, rSqd, rSqd3, rSqd7;
+        double rij[3]; // position of i relative to j
+        double sigma6 = 1.0, term1, term2;
+        
+        double local_a[3] = {0.0,0.0,0.0};
+        double rijf[3];
+        double ri[3] = {r_[i*3],r_[i*3+1],r_[i*3+2]};
+        
         Pot[i] = 0.0;
         for(int j = i+1; j < N_; j++){
             rij[0] = ri[0] - r_[j*3];
             rij[1] = ri[1] - r_[j*3+1];
             rij[2] = ri[2] - r_[j*3+2];
-            rSqd = rij[0] * rij[0] +
-                   rij[1] * rij[1] +
-                   rij[2] * rij[2];
 
+            rSqd = rij[0] * rij[0] + rij[1] * rij[1] + rij[2] * rij[2];
             rSqd3 = rSqd * rSqd * rSqd;
             rSqd7 = rSqd3 * rSqd3 * rSqd;
+            
             f = (48 - 24 * rSqd3) / rSqd7;
 
             term2 = sigma6 / (rSqd * rSqd * rSqd);
@@ -572,155 +571,105 @@ void computeAccelerationsCUDA(){
     cudaFree(d_P);
 }
 
-void computeAccelerations(){
-    double f, rSqd;
-    double rij[3];
 
-    double rSqd3, rSqd7, rijf[3], sigma6, term1, term2, Pot;
-    sigma6 = sigma * sigma * sigma * sigma * sigma * sigma;
-    Pot = 0;
-    for (int i = 0; i < N; i++){
+
+//   Uses the derivative of the Lennard-Jones potential to calculate
+//   the forces on each atom.  Then uses a = F/m to calculate the
+//   accelleration of each atom. 
+void computeAccelerations() {
+    double f, rSqd, rSqd3, rSqd7;
+    double rij[3]; // position of i relative to j
+
+    double ai0, ai1, ai2;
+    
+    double sigma6, term1, term2; // Variaveis da função Potencial
+    sigma6 = sigma*sigma*sigma*sigma*sigma*sigma;
+    P = 0;
+    
+    for (int i = 0; i < N; i++) {  // set all accelerations to zero
         a[i][0] = 0;
         a[i][1] = 0;
         a[i][2] = 0;
     }
 
-    for (int i = 0; i < N - 1; i++){
-        for (int j = i + 1; j < N; j++){
+    // #pragma omp parallel for schedule(dynamic) reduction(+:P,a[:N][:3]) private(rij, rSqd, rSqd3, rSqd7, f, ai0, ai1, ai2, term1, term2)
+    for (int i = 0; i < N-1; i++) {   // loop over all distinct pairs i,j
+        ai0=0; ai1=0; ai2=0;
+        for (int j = i+1; j < N; j++) {
             rij[0] = r[i][0] - r[j][0];
             rij[1] = r[i][1] - r[j][1];
             rij[2] = r[i][2] - r[j][2];
-            rSqd = rij[0] * rij[0] +
-                   rij[1] * rij[1] +
-                   rij[2] * rij[2];
+            rSqd = rij[0] * rij[0] + rij[1] * rij[1] + rij[2] * rij[2];
+            rSqd3 = rSqd*rSqd*rSqd;
+            
+            rSqd7 = rSqd3*rSqd3*rSqd;
+                        
+            f = (48-24*rSqd3)/rSqd7;
 
-            rSqd3 = rSqd * rSqd * rSqd;
-            rSqd7 = rSqd3 * rSqd3 * rSqd;
-            f = (48 - 24 * rSqd3) / rSqd7;
+            ai0     += rij[0]*f;
+            a[j][0] -= rij[0]*f;
+            ai1     += rij[1]*f;
+            a[j][1] -= rij[1]*f;
+            ai2     += rij[2]*f;
+            a[j][2] -= rij[2]*f;
 
-            term2 = sigma6 / (rSqd * rSqd * rSqd);
-            term1 = term2 * term2;
-            Pot += term1 - term2;
-
-            rijf[0] = rij[0] * f;
-            rijf[1] = rij[1] * f;
-            rijf[2] = rij[2] * f;
-            a[i][0] += rijf[0];
-            a[i][1] += rijf[1];
-            a[i][2] += rijf[2];
-            a[j][0] -= rijf[0];
-            a[j][1] -= rijf[1];
-            a[j][2] -= rijf[2];
+            // Operações da função Potencial
+            term2 = sigma6/(rSqd3);
+            term1 = term2*term2;
+            P += term1 - term2;
+            
         }
+        a[i][0] += ai0;
+        a[i][1] += ai1;
+        a[i][2] += ai2;
     }
-    Pot *= 8 * epsilon;
-    P = Pot;
+
+    P *= 8*epsilon;
+
 }
 
+
+
 // returns sum of dv/dt*m/A (aka Pressure) from elastic collisions with walls
-double VelocityVerlet(double dt, int iter, FILE *fp)
-{
+double VelocityVerlet(double dt, int iter, FILE *fp) {
     int i, j;
-
+    
     double psum = 0.;
-
+    double aijDT;
+    
     //  Compute accelerations from forces at current position
     // this call was removed (commented) for predagogical reasons
-    // computeAccelerations();
+    //computeAccelerations();
     //  Update positions and velocity with current velocity and acceleration
-    // printf("  Updated Positions!\n");
-    for (i = 0; i < N; i++)
-    {
-        for (j = 0; j < 3; j++)
-        {
-            r[i][j] += v[i][j] * dt + 0.5 * a[i][j] * dt * dt;
-
-            v[i][j] += 0.5 * a[i][j] * dt;
+    //printf("  Updated Positions!\n");
+    for (i=0; i<N; i++) {
+        for (j=0; j<3; j++) {
+            // Para fazer estas multiplicações apenas 1 vez
+            aijDT = 0.5*a[i][j]*dt;
+            r[i][j] += (v[i][j] + aijDT)*dt; //* Pus 'dt' em evidencia.
+            
+            v[i][j] += aijDT;
         }
-        // printf("  %i  %6.4e   %6.4e   %6.4e\n",i,r[i][0],r[i][1],r[i][2]);
+        //printf("  %i  %6.4e   %6.4e   %6.4e\n",i,r[i][0],r[i][1],r[i][2]);
     }
     //  Update accellerations from updated positions
-    // computeAccelerations();
     computeAccelerationsCUDA();
     //  Update velocity with updated acceleration
-    for (i = 0; i < N; i++)
-    {
-        for (j = 0; j < 3; j++)
-        {
-            v[i][j] += 0.5 * a[i][j] * dt;
-        }
-    }
-
-    // Elastic walls
-    for (i = 0; i < N; i++)
-    {
-        for (j = 0; j < 3; j++)
-        {
-            if (r[i][j] < 0.)
-            {
-                v[i][j] *= -1.;                     //- elastic walls
-                psum += 2 * m * fabs(v[i][j]) / dt; // contribution to pressure from "left" walls
-            }
-            if (r[i][j] >= L)
-            {
-                v[i][j] *= -1.;                     //- elastic walls
-                psum += 2 * m * fabs(v[i][j]) / dt; // contribution to pressure from "right" walls
-            }
-        }
-    }
-
-    /* removed, uncomment to save atoms positions */
-    /*for (i=0; i<N; i++) {
-        fprintf(fp,"%s",atype);
+    for (i=0; i<N; i++) {
         for (j=0; j<3; j++) {
-            fprintf(fp,"  %12.10e ",r[i][j]);
-        }
-        fprintf(fp,"\n");
-    }*/
-    // fprintf(fp,"\n \n");
-
-    return psum / (6 * L * L);
-}
-
-// returns sum of dv/dt*m/A (aka Pressure) from elastic collisions with walls
-double VelocityVerletOPT(double dt, int iter, FILE *fp)
-{
-    int i, j;
-
-    double psum = 0.;
-    double metade_dt = 0.5 * dt; // variáveis que podiam ser
-    double metade_dt_sq = 0.5 * dt * dt;
-    //  Compute accelerations from forces at current position
-    // this call was removed (commented) for predagogical reasons
-    // computeAccelerations();
-    //  Update positions and velocity with current velocity and acceleration
-    // printf("  Updated Positions!\n");
-    for (i = 0; i < N; i++)
-    {
-        for (j = 0; j < 3; j++)
-        {
-            r[i][j] += v[i][j] * dt + a[i][j] * metade_dt_sq;
-
-            v[i][j] += a[i][j] * metade_dt;
-        }
-    }
-    computeAccelerationsCUDA();
-    //  Update velocity with updated acceleration
-    for (i = 0; i < N; i++)
-    {
-        for (j = 0; j < 3; j++)
-        {
-            v[i][j] += metade_dt * a[i][j];
-
-            if (r[i][j] < 0. || r[i][j] >= L)
-            {
-                v[i][j] *= -1.; //- elastic walls
-                psum += 2 * m * fabs(v[i][j]) / dt;
+            v[i][j] += 0.5*a[i][j]*dt;
+            if (r[i][j]<0.) {
+                v[i][j] *=-1.; //- elastic walls
+                psum += fabs(v[i][j]);  // contribution to pressure from "left" walls
+            }
+            if (r[i][j]>=L) {
+                v[i][j]*=-1.;  //- elastic walls
+                psum += fabs(v[i][j]);  // contribution to pressure from "right" walls
             }
         }
     }
-
-    return psum / (6 * L * L);
+    
+    return (psum*m)/(3*L*L*dt); //* Simplified the math, so it doesn't do some extra multiplications and divisions -tag3
 }
 
 void initializeVelocities() {

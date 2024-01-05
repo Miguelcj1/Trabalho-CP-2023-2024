@@ -7,7 +7,7 @@ CUDAFLAGS = -O2 -g -std=c++11 -arch=sm_35 -Wno-deprecated-gpu-targets
 
 .DEFAULT_GOAL = all
 
-all: MDseq.exe MDpar.exe
+all: MDseq.exe MDpar.exe MDcuda.exe
 
 MDseq.exe: $(SRC)/MDseq.cpp
 	module load gcc/11.2.0;
