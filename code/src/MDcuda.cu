@@ -467,7 +467,6 @@ double Kinetic() { //Write Function here!
 
         }
         kin += v2; //* Removed *m/2 and put in evidence in the return value
-        
     }
 
     // printf("  Total Kinetic Energy is %f\n",N*mvs*m/2.);
@@ -536,20 +535,20 @@ void computeAccelerationsCUDA(){
         a[i][0] = a[i][1] = a[i][2] = 0;
     }
 
-    double *d_r, *d_a, *d_P; // arrays na GPU: r, a e Potenciais
-    double h_P[N];// arrays no host: output dos potenciais vindos da GPU
+    double *d_r, *d_a, *d_P; // device arrays (na GPU) -> r, a e Potenciais
+    double h_P[N]; // host arrays (no CPU) -> potenciais resultantes da GPU/Device
 
     cudaMalloc((void **)&d_a, N * 3 * sizeof(double));
-    checkCUDAError("cudaMalloc 1");
+    checkCUDAError("cudaMalloc d_a");
     cudaMalloc((void **)&d_r, N * 3 * sizeof(double));
-    checkCUDAError("cudaMalloc 2");
+    checkCUDAError("cudaMalloc d_r");
     cudaMalloc((void **)&d_P, N * sizeof(double));
-    checkCUDAError("cudaMalloc 3");
+    checkCUDAError("cudaMalloc d_P");
 
     cudaMemcpy(d_a, a, N * 3 * sizeof(double), cudaMemcpyHostToDevice);
-    checkCUDAError("cudaMemcpy 2");
+    checkCUDAError("cudaMemcpy d_a");
     cudaMemcpy(d_r, r, N * 3 * sizeof(double), cudaMemcpyHostToDevice);
-    checkCUDAError("cudaMemcpy 2");
+    checkCUDAError("cudaMemcpy d_r");
 
     int threadsPerBlock = 16; //> Valor que influencia bastante o tempo de execução. Com 16 é melhor.
     int nBlocks = (N + threadsPerBlock - 1) / threadsPerBlock;
@@ -557,16 +556,16 @@ void computeAccelerationsCUDA(){
     computeAccelerationsKernel<<<nBlocks, threadsPerBlock>>>(d_r, d_a, d_P, N);
 
     cudaMemcpy(a, d_a, N * 3 * sizeof(double), cudaMemcpyDeviceToHost);
-    checkCUDAError("cudaMemcpu 1");
+    checkCUDAError("cudaMemcpy a");
     cudaMemcpy(h_P, d_P, N * sizeof(double), cudaMemcpyDeviceToHost);
-    checkCUDAError("cudaMemcpu 2");
+    checkCUDAError("cudaMemcpy h_P");
 
-    // Redução do array dos potenciais
-    P = 0.0;
-    for (int i = 0; i < N - 1; i++){
-        P += h_P[i];
+    // Reduction do array dos Potentials para obter o valor total da Potential
+    P = 0.0; //! Potential
+    for (int i = 0; i < N-1; i++){
+        P += h_P[i]; //! Potential
     }
-    P *= 8 * epsilon;
+    P *= 8*epsilon; //! Potential
 
     cudaFree(d_a);
     cudaFree(d_r);
