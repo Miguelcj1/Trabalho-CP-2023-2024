@@ -72,7 +72,7 @@ core:
 rm_cores:
 	rm core_outputs/job_*_cores.out
 
-rm_slurm:
+rm_sl:
 	rm -f slurm*.out
 
 

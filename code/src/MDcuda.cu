@@ -61,7 +61,7 @@ double L;
 double Tinit;  //2;
 //  Vectors!
 //
-const int MAXPART=5001;
+const int MAXPART=15001; //! alterado para permitir valores maiores de N para os testes de perf
 //  Position
 double r[MAXPART][3];
 //  Velocity
@@ -549,7 +549,7 @@ void computeAccelerationsCUDA(){
     cudaMemcpy(d_r, r, N * 3 * sizeof(double), cudaMemcpyHostToDevice);
     checkCUDAError("cudaMemcpy d_r");
 
-    int threadsPerBlock = 16; //> Valor que influencia bastante o tempo de execução. Com 16 é melhor.
+    int threadsPerBlock = 16; 
     int nBlocks = (N + threadsPerBlock - 1) / threadsPerBlock;
 
     computeAccelerationsKernel<<<nBlocks, threadsPerBlock>>>(d_r, d_a, d_P, N);
