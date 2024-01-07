@@ -1,0 +1,87 @@
+==40267== NVPROF is profiling process 40267, command: ./MDcuda.exe
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                  WELCOME TO WILLY P CHEM MD!
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  ENTER A TITLE FOR YOUR CALCULATION!
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                  TITLE ENTERED AS 'cp'
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  WHICH NOBLE GAS WOULD YOU LIKE TO SIMULATE? (DEFAULT IS ARGON)
+
+  FOR HELIUM,  TYPE 'He' THEN PRESS 'return' TO CONTINUE
+  FOR NEON,    TYPE 'Ne' THEN PRESS 'return' TO CONTINUE
+  FOR ARGON,   TYPE 'Ar' THEN PRESS 'return' TO CONTINUE
+  FOR KRYPTON, TYPE 'Kr' THEN PRESS 'return' TO CONTINUE
+  FOR XENON,   TYPE 'Xe' THEN PRESS 'return' TO CONTINUE
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+                     YOU ARE SIMULATING Ar GAS! 
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  YOU WILL NOW ENTER A FEW SIMULATION PARAMETERS
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+  ENTER THE INTIAL TEMPERATURE OF YOUR GAS IN KELVIN
+
+
+  ENTER THE NUMBER DENSITY IN moles/m^3
+  FOR REFERENCE, NUMBER DENSITY OF AN IDEAL GAS AT STP IS ABOUT 40 moles/m^3
+  NUMBER DENSITY OF LIQUID ARGON AT 1 ATM AND 87 K IS ABOUT 35000 moles/m^3
+  PERCENTAGE OF CALCULATION COMPLETE:
+  [ 10 | 20 | 30 | 40 | 50 | 60 | 70 | 80 | 90 | 100 ]
+==40267== Profiling application: ./MDcuda.exe
+
+  TO ANIMATE YOUR SIMULATION, OPEN THE FILE 
+  'cp_traj.xyz' WITH VMD AFTER THE SIMULATION COMPLETES
+
+  TO ANALYZE INSTANTANEOUS DATA ABOUT YOUR MOLECULE, OPEN THE FILE 
+  'cp_output.txt' WITH YOUR FAVORITE TEXT EDITOR OR IMPORT THE DATA INTO EXCEL
+
+  THE FOLLOWING THERMODYNAMIC AVERAGES WILL BE COMPUTED AND WRITTEN TO THE FILE  
+  'cp_average.txt':
+
+  AVERAGE TEMPERATURE (K):                        91.48200
+
+  AVERAGE PRESSURE  (Pa):                   24012360.78136
+
+  PV/nT (J * mol^-1 K^-1):                         7.49948
+
+  PERCENT ERROR of pV/nT AND GAS CONSTANT:         9.80195
+
+  THE COMPRESSIBILITY (unitless):                  0.90198 
+
+  TOTAL VOLUME (m^3):                      4.26996e-25 
+
+  NUMBER OF PARTICLES (unitless):          9000 
+==40267== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   99.81%  12.5886s       202  62.320ms  62.063ms  62.772ms  computeAccelerationsKernel(double*, double*, double*, int)
+                    0.12%  14.752ms       404  36.515us  35.968us  46.177us  [CUDA memcpy HtoD]
+                    0.07%  8.9227ms       404  22.085us  11.232us  41.985us  [CUDA memcpy DtoH]
+      API calls:   97.99%  12.6585s       808  15.667ms  39.474us  62.949ms  cudaMemcpy
+                    1.81%  233.59ms       606  385.47us  3.2220us  207.51ms  cudaMalloc
+                    0.16%  20.910ms       606  34.505us  2.7500us  160.17us  cudaFree
+                    0.02%  3.0971ms       202  15.332us  13.231us  60.772us  cudaLaunchKernel
+                    0.00%  547.61us         1  547.61us  547.61us  547.61us  cuDeviceTotalMem
+                    0.00%  483.40us      1414     341ns     189ns  16.625us  cudaGetLastError
+                    0.00%  396.70us       101  3.9270us     227ns  192.67us  cuDeviceGetAttribute
+                    0.00%  257.83us         1  257.83us  257.83us  257.83us  cuDeviceGetName
+                    0.00%  9.2830us         1  9.2830us  9.2830us  9.2830us  cuDeviceGetPCIBusId
+                    0.00%  1.6850us         3     561ns     262ns     876ns  cuDeviceGetCount
+                    0.00%     986ns         2     493ns     258ns     728ns  cuDeviceGet
+                    0.00%     968ns         1     968ns     968ns     968ns  cuDeviceGetUuid
+
+real	0m14.482s
+user	0m8.700s
+sys	0m4.961s

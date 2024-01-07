@@ -1,0 +1,87 @@
+==2891== NVPROF is profiling process 2891, command: ./MDcuda.exe
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                  WELCOME TO WILLY P CHEM MD!
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  ENTER A TITLE FOR YOUR CALCULATION!
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                  TITLE ENTERED AS 'cp'
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  WHICH NOBLE GAS WOULD YOU LIKE TO SIMULATE? (DEFAULT IS ARGON)
+
+  FOR HELIUM,  TYPE 'He' THEN PRESS 'return' TO CONTINUE
+  FOR NEON,    TYPE 'Ne' THEN PRESS 'return' TO CONTINUE
+  FOR ARGON,   TYPE 'Ar' THEN PRESS 'return' TO CONTINUE
+  FOR KRYPTON, TYPE 'Kr' THEN PRESS 'return' TO CONTINUE
+  FOR XENON,   TYPE 'Xe' THEN PRESS 'return' TO CONTINUE
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+                     YOU ARE SIMULATING Ar GAS! 
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  YOU WILL NOW ENTER A FEW SIMULATION PARAMETERS
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+  ENTER THE INTIAL TEMPERATURE OF YOUR GAS IN KELVIN
+
+
+  ENTER THE NUMBER DENSITY IN moles/m^3
+  FOR REFERENCE, NUMBER DENSITY OF AN IDEAL GAS AT STP IS ABOUT 40 moles/m^3
+  NUMBER DENSITY OF LIQUID ARGON AT 1 ATM AND 87 K IS ABOUT 35000 moles/m^3
+  PERCENTAGE OF CALCULATION COMPLETE:
+  [ 10 | 20 | 30 | 40 | 50 | 60 | 70 | 80 | 90 | 100 ]
+==2891== Profiling application: ./MDcuda.exe
+
+  TO ANIMATE YOUR SIMULATION, OPEN THE FILE 
+  'cp_traj.xyz' WITH VMD AFTER THE SIMULATION COMPLETES
+
+  TO ANALYZE INSTANTANEOUS DATA ABOUT YOUR MOLECULE, OPEN THE FILE 
+  'cp_output.txt' WITH YOUR FAVORITE TEXT EDITOR OR IMPORT THE DATA INTO EXCEL
+
+  THE FOLLOWING THERMODYNAMIC AVERAGES WILL BE COMPUTED AND WRITTEN TO THE FILE  
+  'cp_average.txt':
+
+  AVERAGE TEMPERATURE (K):                       131.45506
+
+  AVERAGE PRESSURE  (Pa):                  131001228.45076
+
+  PV/nT (J * mol^-1 K^-1):                        28.47279
+
+  PERCENT ERROR of pV/nT AND GAS CONSTANT:       242.44905
+
+  THE COMPRESSIBILITY (unitless):                  3.42449 
+
+  TOTAL VOLUME (m^3):                      2.37220e-25 
+
+  NUMBER OF PARTICLES (unitless):          5000 
+==2891== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   99.77%  5.88742s       202  29.146ms  29.093ms  29.200ms  computeAccelerationsKernel(double*, double*, double*, int)
+                    0.15%  8.5594ms       404  21.186us  20.800us  21.696us  [CUDA memcpy HtoD]
+                    0.09%  5.0447ms       404  12.486us  6.4960us  19.232us  [CUDA memcpy DtoH]
+      API calls:   95.84%  5.93159s       808  7.3411ms  29.644us  29.379ms  cudaMemcpy
+                    3.74%  231.31ms       606  381.71us  2.9140us  205.12ms  cudaMalloc
+                    0.34%  20.881ms       606  34.457us  2.7520us  159.20us  cudaFree
+                    0.05%  3.0680ms       202  15.188us  12.825us  62.235us  cudaLaunchKernel
+                    0.01%  761.72us       101  7.5410us     202ns  542.40us  cuDeviceGetAttribute
+                    0.01%  660.30us         1  660.30us  660.30us  660.30us  cuDeviceTotalMem
+                    0.01%  428.46us      1414     303ns     156ns  14.980us  cudaGetLastError
+                    0.00%  23.236us         1  23.236us  23.236us  23.236us  cuDeviceGetName
+                    0.00%  8.9560us         1  8.9560us  8.9560us  8.9560us  cuDeviceGetPCIBusId
+                    0.00%  1.5800us         3     526ns     257ns     883ns  cuDeviceGetCount
+                    0.00%  1.0570us         1  1.0570us  1.0570us  1.0570us  cuDeviceGetUuid
+                    0.00%     975ns         2     487ns     225ns     750ns  cuDeviceGet
+
+real	0m7.827s
+user	0m4.172s
+sys	0m2.739s
