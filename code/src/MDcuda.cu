@@ -72,7 +72,7 @@ double a[MAXPART][3];
 double F[MAXPART][3];
 
 // Variável global criada para evitar o uso da função Potencial(), armazenando aqui o valor que a função Potential retornaria.
-double P; //!Potencial
+double Potential; //!Potencial
 
 // atom type
 char atype[10];
@@ -331,7 +331,7 @@ int main()
         mvs = MeanSquaredVelocity(); //* apenas lê array v e retorna um double mvs
         KE = Kinetic(); //* apenas lê array v e retorna um double KE
         // PE = Potential();
-        PE = P; //! Potential
+        PE = Potential; 
         
         // Temperature from Kinetic Theory
         Temp = m*mvs/(3*kB) * TempFac;
@@ -560,11 +560,11 @@ void computeAccelerationsCUDA(){
     checkCUDAError("cudaMemcpy h_P");
 
     // Reduction do array dos Potentials para obter o valor total da Potential
-    P = 0.0; //! Potential
+    Potential = 0.0; 
     for (int i = 0; i < N-1; i++){
-        P += h_P[i]; //! Potential
+        Potential += h_P[i]; 
     }
-    P *= 8*epsilon; //! Potential
+    Potential *= 8*epsilon; 
 
     cudaFree(d_a);
     cudaFree(d_r);
@@ -584,7 +584,7 @@ void computeAccelerations() {
     
     double sigma6, term1, term2; // Variaveis da função Potencial
     sigma6 = sigma*sigma*sigma*sigma*sigma*sigma;
-    P = 0;
+    Potential = 0;
     
     for (int i = 0; i < N; i++) {  // set all accelerations to zero
         a[i][0] = 0;
@@ -616,7 +616,7 @@ void computeAccelerations() {
             // Operações da função Potencial
             term2 = sigma6/(rSqd3);
             term1 = term2*term2;
-            P += term1 - term2;
+            Potential += term1 - term2;
             
         }
         a[i][0] += ai0;
@@ -624,7 +624,7 @@ void computeAccelerations() {
         a[i][2] += ai2;
     }
 
-    P *= 8*epsilon;
+    Potential *= 8*epsilon;
 
 }
 
